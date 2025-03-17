@@ -1,5 +1,5 @@
 "use client"
-
+ 
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import ModelSelector from "@/components/model-selector"
 import { questions } from "@/components/questions"
 import { Tooltip as ReactTooltip } from "react-tooltip"
 import "/styles/SinglePanelView.css"
-
+ 
 interface SinglePanelViewProps {
   response: string | null
   isGenerating: boolean
@@ -19,26 +19,26 @@ interface SinglePanelViewProps {
   messages: Array<{ role: 'user' | 'assistant', content: string }>
   onQuestionSelect: (question: { title: string, question: string, options: string[] }) => void
 }
-
+ 
 export default function SinglePanelView({ response, isGenerating, prompt, onSubmit, messages, onQuestionSelect }: SinglePanelViewProps) {
   const [input, setInput] = useState("")
-  const [selectedModel, setSelectedModel] = useState("gpt-4o")
+  const [selectedModels, setSelectedModels] = useState<string[]>([])
   const [temperature, setTemperature] = useState(1.0)
   const [maxTokens, setMaxTokens] = useState(2048)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const filterButtonRef = useRef<HTMLButtonElement>(null)
-
+ 
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
+ 
   const handleSubmit = async () => {
     if (input.trim() && !isGenerating) {
       const userMessage = input.trim()
       onSubmit(userMessage)
       setInput("")
-
+ 
       try {
         setIsGenerating(true)
-
+ 
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: {
@@ -46,16 +46,16 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
           },
           body: JSON.stringify({
             prompt: userMessage,
-            model: selectedModel,
+            models: selectedModels,
             temperature,
             maxTokens,
           }),
         })
-
+ 
         if (!response.ok) {
           throw new Error("Failed to generate response")
         }
-
+ 
         const data = await response.json()
         onSubmit(data.text)
       } catch (error) {
@@ -65,30 +65,34 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
       }
     }
   }
-
+ 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSubmit()
     }
   }
-
+ 
   const handleClear = () => {
     setInput("")
   }
-
+ 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
   }, [messages, isGenerating])
-
+ 
+  const handleModelRemove = (model: string) => {
+    setSelectedModels(selectedModels.filter((m) => m !== model))
+  }
+ 
   return (
     <div className="single-panel-view flex h-full">
       {/* Left side - Questions and configuration */}
       <div className="left-panel flex flex-col w-1/3 border-r border-[#1A1A1A] p-4">
         <div className="header mb-4 flex items-center space-x-2">
-          <ModelSelector selectedModel={selectedModel} onModelChange={setSelectedModel} />
+          <ModelSelector selectedModels={selectedModels} onModelChange={setSelectedModels} />
           <Button
             ref={filterButtonRef}
             size="icon"
@@ -99,17 +103,29 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
             <Sliders className="h-5 w-5" />
           </Button>
         </div>
-
+ 
+        {/* Display selected models */}
+        <div className="selected-models mb-4 flex flex-wrap gap-2">
+          {selectedModels.map((model) => (
+            <div key={model} className="flex items-center bg-gray-700 text-white px-2 py-1 rounded">
+              {model}
+              <button onClick={() => handleModelRemove(model)} className="ml-2">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+ 
         <div className="content flex-1 overflow-auto">
           {/* Questions */}
           <div className="questions">
             <div className="text-sm text-gray-400 mb-2">Select a question:</div>
             <ul className="space-y-4">
               {questions.map((question) => (
-                <li
-                  key={question.id}
-                  className="bg-[#1A1A1A] p-4 rounded hover:bg-[#333333] cursor-pointer"
-                  onClick={() => onQuestionSelect({ title: question.title, question: question.question, options: question.options })}
+                <div 
+                  key={question.id} 
+                  className="p-3 border border-gray-700 rounded-lg mb-2 cursor-pointer bg-gradient-to-r from-gray-900 to-gray-800 hover:border-blue-500/50 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-all duration-300"
+                  onClick={() => onQuestionSelect(question)}
                 >
                   <div className="text-white font-semibold mb-2">{question.title}</div>
                   <div className="text-gray-300 mb-2">{question.question}</div>
@@ -122,13 +138,13 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
                       </li>
                     ))}
                   </ul>
-                </li>
+                </div>
               ))}
             </ul>
           </div>
         </div>
       </div>
-
+ 
       {/* Right side - Chat interface */}
       <div className="right-panel flex-1 flex flex-col p-4">
         <div className="messages flex-1 overflow-auto">
@@ -140,15 +156,28 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
                     {message.role === 'user' ? 'User' : 'Assistant'}
                   </div>
                   <div className="content">
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                    <div className={`mb-4 ${message.role === 'user' ? 'ml-auto' : ''}`}>
+                      <div
+                        className={`p-3 rounded-lg ${
+                          message.role === 'user'
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white ml-12'
+                            : 'bg-gradient-to-r from-gray-800 to-gray-900 border border-gray-700 mr-12'
+                        }`}
+                      >
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
               {isGenerating && (
                 <div className="message">
                   <div className="role">Assistant</div>
-                  <div className="flex items-center justify-center py-8 bg-[#1A1A1A] rounded-md">
-                    <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                  <div className="flex items-center justify-center p-4">
+                    <div className="relative w-10 h-10">
+                      <div className="absolute inset-0 border-t-2 border-blue-500 border-solid rounded-full animate-spin"></div>
+                      <div className="absolute inset-[3px] border-t-2 border-indigo-400 border-solid rounded-full animate-spin-slow"></div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -160,7 +189,7 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
             </div>
           )}
         </div>
-
+ 
         {/* Chat input integrated in the right panel */}
         <div className="input-container mt-4">
           <div className="input-wrapper relative flex items-end bg-[#1A1A1A] border border-[#333333] rounded transition-colors focus-within:border-[#666666]">
@@ -193,7 +222,7 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
           </div>
         </div>
       </div>
-
+ 
       {/* Filter Modal */}
       {showFilterModal && (
         <div
@@ -237,4 +266,3 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
     </div>
   )
 }
-

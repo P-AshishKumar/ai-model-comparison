@@ -66,6 +66,26 @@ const config = {
           },
         },
       },
+      animation: {
+        "spin-slow": "spin 3s linear infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "pulse-slow": "pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "float": "float 6s ease-in-out infinite",
+      },
+      keyframes: {
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 5px rgba(99, 102, 241, 0.2)" },
+          "50%": { boxShadow: "0 0 20px rgba(99, 102, 241, 0.6)" },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
+      },
+      transitionDelay: {
+        '1000': '1000ms',
+        '2000': '2000ms',
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],

@@ -19,9 +19,9 @@ const ModelPanel: React.FC<ModelPanelProps> = ({ panelId, response, isGenerating
   const [selectedModel, setSelectedModel] = React.useState("gpt-4o")
 
   return (
-    <div className={`h-full flex flex-col border-r border-[#1A1A1A] ${className}`}>
+    <div className={`h-full flex flex-col border-r border-[#1A1A1A] bg-gradient-to-b from-[#0D0D0D] to-[#111] backdrop-blur-md ${className}`}>
       {/* Panel header */}
-      <div className="flex items-center justify-between p-2 border-b border-[#1A1A1A]">
+      <div className="flex items-center justify-between p-2 border-b border-indigo-900/20 bg-black/40 backdrop-blur-sm">
         <div className="flex items-center space-x-2">
           <div className={`w-6 h-6 flex items-center justify-center bg-[#1A1A1A] rounded text-sm font-medium`}>
             {panelId}

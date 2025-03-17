@@ -21,6 +21,10 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  // Add this output configuration
+  output: 'standalone',
+  // Ensure trailingSlash is false to avoid issues with routes
+  trailingSlash: false,
 }
 
 mergeConfig(nextConfig, userConfig)
