@@ -1,0 +1,40 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main  # Change this if you want to deploy from a different branch
+
+jobs:
+
+  type-check:
+    steps:
+      - name: Run typescript
+        run: npm run type-check
+
+  deploy:
+    name: Deploy Next.js to Vercel
+    needs: type-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18  # Use the recommended Node.js version for your project
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install  # Change to yarn install or pnpm install if needed
+
+      - name: Build project
+        run: npm run build  # Make sure your Next.js project builds successfully
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy to Vercel
+        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
