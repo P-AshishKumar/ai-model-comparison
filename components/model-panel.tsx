@@ -13,11 +13,11 @@ interface ModelPanelProps {
   showResponseArea: boolean
   messages: Array<{ role: 'user' | 'assistant', content: string }>
   className?: string
+  selectedModel: string
+  onModelChange: (model: string) => void
 }
 
-const ModelPanel: React.FC<ModelPanelProps> = ({ panelId, response, isGenerating, prompt, showResponseArea, messages, className }) => {
-  const [selectedModel, setSelectedModel] = React.useState("gpt-4o")
-
+const ModelPanel: React.FC<ModelPanelProps> = ({ panelId, response, isGenerating, prompt, showResponseArea, messages, className, selectedModel, onModelChange }) => {
   return (
     <div className={`h-full flex flex-col border-r border-[#1A1A1A] ${className}`}>
       {/* Panel header */}
@@ -26,7 +26,7 @@ const ModelPanel: React.FC<ModelPanelProps> = ({ panelId, response, isGenerating
           <div className={`w-6 h-6 flex items-center justify-center bg-[#1A1A1A] rounded text-sm font-medium`}>
             {panelId}
           </div>
-          <ModelSelector selectedModel={selectedModel} onModelChange={setSelectedModel} />
+          <ModelSelector selectedModel={selectedModel} onModelChange={onModelChange} />
         </div>
         <div className="flex items-center space-x-1">
           <Button variant="ghost" size="icon" className="h-8 w-8">

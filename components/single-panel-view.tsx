@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, ArrowUp, Mic, RotateCcw, Sliders, X } from "lucide-react"
+import { Loader2, ArrowUp, Mic, RotateCcw, Sliders, X, Trash2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import ModelSelector from "@/components/model-selector"
 import { questions } from "@/components/questions"
@@ -16,48 +16,56 @@ interface SinglePanelViewProps {
   isGenerating: boolean
   prompt: string
   onSubmit: (input: string) => void
-  messages: Array<{ role: 'user' | 'assistant', content: string }>
   onQuestionSelect: (question: { title: string, question: string, options: string[] }) => void
 }
 
-export default function SinglePanelView({ response, isGenerating, prompt, onSubmit, messages, onQuestionSelect }: SinglePanelViewProps) {
+export default function SinglePanelView({ response, isGenerating, prompt, onSubmit, onQuestionSelect }: SinglePanelViewProps) {
   const [input, setInput] = useState("")
-  const [selectedModel, setSelectedModel] = useState("gpt-4o")
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([])
+  const [selectedModel, setSelectedModel] = useState("")
   const [temperature, setTemperature] = useState(1.0)
   const [maxTokens, setMaxTokens] = useState(2048)
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [isGeneratingState, setIsGenerating] = useState(false)
   const filterButtonRef = useRef<HTMLButtonElement>(null)
-
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const handleSubmit = async () => {
-    if (input.trim() && !isGenerating) {
+    if (input.trim() && !isGeneratingState) {
       const userMessage = input.trim()
-      onSubmit(userMessage)
+      setMessages((prev) => [...prev, { role: "user", content: userMessage }])
       setInput("")
+      setIsGenerating(true)
 
       try {
-        setIsGenerating(true)
+        // Determine the correct API endpoint based on the selected model
+        const endpoint = selectedModel.startsWith("gpt-") ? "openai" :
+                         selectedModel.startsWith("claude-") ? "anthropic" :
+                         selectedModel.startsWith("gemini-") ? "google" : null
 
-        const response = await fetch("/api/generate", {
+        if (!endpoint) {
+          throw new Error("Unsupported model selected")
+        }
+
+        // Create the conversation history as a single string
+        const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${userMessage}`
+
+        const response = await fetch(`/api/generate/${endpoint}`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            prompt: userMessage,
+            prompt: conversationHistory,
             model: selectedModel,
             temperature,
             maxTokens,
           }),
         })
 
-        if (!response.ok) {
-          throw new Error("Failed to generate response")
-        }
+        if (!response.ok) throw new Error("Failed to generate response")
 
         const data = await response.json()
-        onSubmit(data.text)
+
+        setMessages((prev) => [...prev, { role: "assistant", content: data.text }])
       } catch (error) {
         console.error("Error generating response:", error)
       } finally {
@@ -77,15 +85,21 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
     setInput("")
   }
 
+  const handleClearChat = () => {
+    setMessages([])
+  }
+
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [messages, isGenerating])
+    const timeout = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, 100)
+
+    return () => clearTimeout(timeout)
+  }, [messages, isGeneratingState])
 
   return (
     <div className="single-panel-view flex h-full">
-      {/* Left side - Questions and configuration */}
+      {/* Left Panel - Questions & Config */}
       <div className="left-panel flex flex-col w-1/3 border-r border-[#1A1A1A] p-4">
         <div className="header mb-4 flex items-center space-x-2">
           <ModelSelector selectedModel={selectedModel} onModelChange={setSelectedModel} />
@@ -103,7 +117,7 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
         <div className="content flex-1 overflow-auto">
           {/* Questions */}
           <div className="questions">
-            <div className="text-sm text-gray-400 mb-2">Select a question:</div>
+            <div className="text-sm text-gray-400 mb-2">Select a scenario for comparing LLMs.</div>
             <ul className="space-y-4">
               {questions.map((question) => (
                 <li
@@ -129,22 +143,20 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
         </div>
       </div>
 
-      {/* Right side - Chat interface */}
+      {/* Right Panel - Chat Interface */}
       <div className="right-panel flex-1 flex flex-col p-4">
         <div className="messages flex-1 overflow-auto">
           {messages.length > 0 ? (
             <div className="space-y-6">
               {messages.map((message, index) => (
                 <div key={index} className="message">
-                  <div className="role">
-                    {message.role === 'user' ? 'User' : 'Assistant'}
-                  </div>
+                  <div className="role">{message.role === "user" ? "User" : "Assistant"}</div>
                   <div className="content">
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
                 </div>
               ))}
-              {isGenerating && (
+              {isGeneratingState && (
                 <div className="message">
                   <div className="role">Assistant</div>
                   <div className="flex items-center justify-center py-8 bg-[#1A1A1A] rounded-md">
@@ -161,10 +173,11 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
           )}
         </div>
 
-        {/* Chat input integrated in the right panel */}
+        {/* Chat Input */}
         <div className="input-container mt-4">
           <div className="input-wrapper relative flex items-end bg-[#1A1A1A] border border-[#333333] rounded transition-colors focus-within:border-[#666666]">
             <textarea
+              autoFocus
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -175,25 +188,17 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
               <Button size="icon" variant="ghost" className="button" onClick={handleClear}>
                 <X className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="button">
-                <RotateCcw className="h-4 w-4" />
+              <Button size="icon" variant="ghost" className="button" onClick={handleClearChat}>
+                <Trash2 className="h-4 w-4 text-red-500" />
               </Button>
-              <Button size="icon" variant="ghost" className="button">
-                <Mic className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                onClick={handleSubmit}
-                disabled={!input.trim() || isGenerating}
-                className="submit-button bg-[#10A37F] hover:bg-[#0D8A6C] disabled:opacity-50"
-              >
-                {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+              <Button size="icon" onClick={handleSubmit} disabled={!input.trim() || isGeneratingState} className="submit-button bg-[#10A37F] hover:bg-[#0D8A6C] disabled:opacity-50">
+                {isGeneratingState ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
               </Button>
             </div>
           </div>
         </div>
       </div>
-
+      
       {/* Filter Modal */}
       {showFilterModal && (
         <div
@@ -237,4 +242,3 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
     </div>
   )
 }
-
