@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     // If filePath is provided, read and encode the file
     if (filePath) {
       try {
-        const absolutePath = path.resolve(filePath);
+        const absolutePath = process.cwd() +filePath;
         const fileContent = fs.readFileSync(absolutePath);
         const fileBase64 = fileContent.toString("base64");
         messages[0].content.push({

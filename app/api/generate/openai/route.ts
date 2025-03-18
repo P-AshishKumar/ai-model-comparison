@@ -20,7 +20,8 @@ export async function POST(req: Request) {
 
     // If filePath is provided, read the file
     if (filePath) {
-      const fileBuffer = fs.createReadStream(filePath);
+      const absolutePath = process.cwd() + filePath;
+      const fileBuffer = fs.createReadStream(absolutePath);
 
       // Upload file to OpenAI
       const fileUploadResponse = await client.files.create({
