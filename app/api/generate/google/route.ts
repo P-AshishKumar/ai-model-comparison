@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     // If filePath is provided, read the file
     let fileMessage = null;
     if (filePath) {
-      const absolutePath = process.cwd() + filePath;
+      const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
 
       // Read the file content
       const fileBuffer = fs.readFileSync(absolutePath);

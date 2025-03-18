@@ -1,6 +1,6 @@
 import fs from "fs";
 import { OpenAI } from "openai";
-
+import path from 'path';
 // Initialize OpenAI client
 const client = new OpenAI();
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     // If filePath is provided, read the file
     if (filePath) {
-      const absolutePath = process.cwd() + filePath;
+      const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
       const fileBuffer = fs.createReadStream(absolutePath);
 
       // Upload file to OpenAI
