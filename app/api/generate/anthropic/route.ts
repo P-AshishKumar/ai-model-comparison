@@ -1,41 +1,93 @@
-import { anthropic } from "@ai-sdk/anthropic";
+import Anthropic from '@anthropic-ai/sdk';
 import { generateText } from "ai";
+import fs from "fs";
+import path from "path";
+
+interface TextContent {
+  type: "text";
+  text: string;
+}
+
+interface DocumentContent {
+  type: "document";
+  source: {
+    type: "base64";
+    media_type: "application/pdf";
+    data: string;
+  };
+}
+
+type MessageContent = TextContent | DocumentContent;
+
+interface Message {
+  role: "user" | "assistant";
+  content: MessageContent[];
+}
 
 export async function POST(req: Request) {
   try {
-    console.log("📩 Incoming Request:");
-    // console.log("➡️ Method:", req.method);
-    // console.log("📝 Headers:", Object.fromEntries(req.headers.entries()));
-
     const requestBody = await req.json();
-    console.log("📦 Request Body:", requestBody);
+    const { prompt, model, temperature = 0.9, tokens = 500, filePath } = requestBody;
 
-    const { prompt, model } = requestBody;
-
-    // Ensure model is properly handled
-    const modelName = model
-
-    // Ensure API Key is loaded
-    const api_key = process.env.ANTHROPIC_API_KEY;
-    if (!api_key) {
-      console.error("❌ ERROR: Missing Anthropic API Key. Make sure ANTHROPIC_API_KEY is set in .env.local");
-      return Response.json({ error: "Missing API Key" }, { status: 500 });
+    // Ensure the 'model' field is provided
+    if (!model) {
+      console.error("❌ ERROR: Missing 'model' field in the request body.");
+      return new Response(JSON.stringify({ error: "Missing 'model' field" }), { status: 400 });
     }
 
-    console.log("✅ API Key Loaded");
+    // Ensure API Key is loaded
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      console.error("❌ ERROR: Missing Anthropic API Key. Ensure ANTHROPIC_API_KEY is set in your environment variables.");
+      return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500 });
+    }
 
-    const result = await generateText({
-      model: anthropic(modelName, { apiKey: api_key }),
-      prompt,
-      system:
-        "You are a helpful AI assistant powered by Anthropic's Claude. Provide clear, concise, and accurate responses.",
+    // Prepare messages array
+    const messages: Message[] = [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: prompt }
+        ],
+      },
+    ];
+
+    // If filePath is provided, read and encode the file
+    if (filePath) {
+      try {
+        const absolutePath = path.resolve(filePath);
+        const fileContent = fs.readFileSync(absolutePath);
+        const fileBase64 = fileContent.toString("base64");
+        messages[0].content.push({
+          type: "document",
+          source: {
+            type: "base64",
+            media_type: "application/pdf", // Adjust MIME type if necessary
+            data: fileBase64,
+          },
+        });
+      } catch (error) {
+        console.error("❌ ERROR: Failed to read or encode file at", filePath, error);
+        return new Response(JSON.stringify({ error: "Failed to process file" }), { status: 500 });
+      }
+    }
+
+    // Send the API request
+    const anthropic = new Anthropic();
+    const response = await anthropic.messages.create({
+      model: model, // Use the provided model
+      messages:messages,
+      max_tokens: tokens,
+      temperature,
     });
 
-    console.log("🟢 Generated Response:", result.text);
-
-    return Response.json({ text: result.text });
+    // Return the generated response
+    console.log("🟢 Anthropic Generated Response:", response.content[0]?.text);
+    return new Response(JSON.stringify({ text:response.content[0]?.text }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error("❌ Anthropic Generation Error:", error);
-    return Response.json({ error: "Failed to generate text with Anthropic" }, { status: 500 });
+    console.error("❌ ERROR:", error);
+    return new Response(JSON.stringify({ error: "An error occurred during processing" }), { status: 500 });
   }
 }
