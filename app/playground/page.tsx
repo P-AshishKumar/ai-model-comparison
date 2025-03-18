@@ -37,11 +37,11 @@ export default function PlaygroundPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<{ title: string, question: string, options: string[] } | null>(null)
   const [selectedModels, setSelectedModels] = useState<string[]>([])
 
-    const modelToEndpointMapping: { [key: string]: string } = {
-  "gpt-4o": "openai",
-  "claude-3-7-sonnet-20250219": "anthropic",
-  "gemini-2.0-flash": "google"
-};
+  const modelToEndpointMapping: { [key: string]: string } = {
+    "gpt-4o": "openai",
+    "claude-3-7-sonnet-20250219": "anthropic",
+    "gemini-2.0-flash": "google"
+  };
 
   // Function to handle the message submission
   const handleSubmit = async (input: string) => {
@@ -61,18 +61,18 @@ export default function PlaygroundPage() {
       const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${input}`
 
 
-     const fetchPromises = selectedModels.map((model, index) => {
-      const endpoint = modelToEndpointMapping[model];
-      return fetch(`/api/generate/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: conversationHistory,
-          model,
-        //   filePath: "components/Mobile-Device-Policy.pdf",
-        }),
+      const fetchPromises = selectedModels.map((model, index) => {
+        const endpoint = modelToEndpointMapping[model];
+        return fetch(`/api/generate/${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: conversationHistory,
+            model,
+            //   filePath: "components/Mobile-Device-Policy.pdf",
+          }),
+        });
       });
-    });
 
       const results = await Promise.all(fetchPromises)
       const dataPromises = results.map((res) => res.json())
@@ -101,23 +101,23 @@ export default function PlaygroundPage() {
   }
 
   // Add or remove models from selectedModels
-//   const handleModelSelect = (model: string) => {
-//   setSelectedModels((prevModels) => {
-//     const updatedModels = []; // Create a shallow copy of the previous array
-//     const index = updatedModels.indexOf(model);
+  //   const handleModelSelect = (model: string) => {
+  //   setSelectedModels((prevModels) => {
+  //     const updatedModels = []; // Create a shallow copy of the previous array
+  //     const index = updatedModels.indexOf(model);
 
-//     if (index > -1) {
-//       // If model exists in the array, remove it
-//       updatedModels.splice(index, 1);
-//     } else {
-//       // Otherwise, add the model
-//       updatedModels.push(model);
-//     }
+  //     if (index > -1) {
+  //       // If model exists in the array, remove it
+  //       updatedModels.splice(index, 1);
+  //     } else {
+  //       // Otherwise, add the model
+  //       updatedModels.push(model);
+  //     }
 
-//     console.log("Updated models:", updatedModels);
-//     return updatedModels; // Return the new array to trigger state update
-//   });
-// };
+  //     console.log("Updated models:", updatedModels);
+  //     return updatedModels; // Return the new array to trigger state update
+  //   });
+  // };
 
 
 
@@ -150,18 +150,18 @@ export default function PlaygroundPage() {
     try {
       const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${question.question}`
 
-    const fetchPromises = selectedModels.map((model, index) => {
-      const endpoint = modelToEndpointMapping[model];
-      return fetch(`/api/generate/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: conversationHistory,
-          model,
-          filePath: "components/Mobile-Device-Policy.pdf",
-        }),
+      const fetchPromises = selectedModels.map((model, index) => {
+        const endpoint = modelToEndpointMapping[model];
+        return fetch(`/api/generate/${endpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: conversationHistory,
+            model,
+            filePath: "public/Mobile-Device-Policy.pdf",
+          }),
+        });
       });
-    });
 
       const results = await Promise.all(fetchPromises)
       console.log("Result", results)
@@ -235,18 +235,18 @@ export default function PlaygroundPage() {
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {compareCount === COMPARE_SINGLE ? (
-        <SinglePanelView
-          response={responses.A}
-          isGenerating={isGenerating}
-          prompt={prompt}
-          onSubmit={handleSubmit}
-          messages={messages}
-          onQuestionSelect={handleQuestionSelect}
-          selectedQuestion={selectedQuestion}
-          setSelectedModels={setSelectedModels}  // Pass function to allow model selection
-          selectedModels={selectedModels}  // Pass selected models
-        />
-                ) : (
+          <SinglePanelView
+            response={responses.A}
+            isGenerating={isGenerating}
+            prompt={prompt}
+            onSubmit={handleSubmit}
+            messages={messages}
+            onQuestionSelect={handleQuestionSelect}
+            selectedQuestion={selectedQuestion}
+            setSelectedModels={setSelectedModels}  // Pass function to allow model selection
+            selectedModels={selectedModels}  // Pass selected models
+          />
+        ) : (
           <div className={`grid ${compareCount === COMPARE_DOUBLE ? "grid-cols-2" : "grid-cols-3"} gap-0 h-[calc(100vh-180px)] overflow-hidden`}>
             {selectedModels.includes('gpt-4o') && (
               <ModelPanel
@@ -261,7 +261,7 @@ export default function PlaygroundPage() {
             )}
             {selectedModels.includes('claude-3-7-sonnet-20250219') && (
               <ModelPanel
-               className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
+                className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
                 response={responses.B}
                 isGenerating={isGenerating}
                 showResponseArea={true}
@@ -272,7 +272,7 @@ export default function PlaygroundPage() {
             )}
             {selectedModels.includes('gemini-2.0-flash') && (
               <ModelPanel
-               className="overflow-auto"              response={responses.C}
+                className="overflow-auto" response={responses.C}
                 isGenerating={isGenerating}
                 showResponseArea={true}
                 prompt={prompt}
@@ -283,12 +283,12 @@ export default function PlaygroundPage() {
           </div>
         )}
       </div>
-       {/* Chat input - only shown in compare mode, placed outside of the panel view */}
-            {compareCount > COMPARE_SINGLE && (
-                <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
-                    <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
-                </div>
-            )}
+      {/* Chat input - only shown in compare mode, placed outside of the panel view */}
+      {compareCount > COMPARE_SINGLE && (
+        <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
+          <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
+        </div>
+      )}
     </div>
   )
 }
