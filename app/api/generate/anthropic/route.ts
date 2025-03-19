@@ -1,8 +1,9 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { Anthropic } from '@anthropic-ai/sdk';
 import { generateText } from "ai";
 import fs from "fs";
 import path from "path";
 
+// Define the types for the message contents.
 interface TextContent {
   type: "text";
   text: string;
@@ -20,15 +21,16 @@ interface DocumentContent {
 type MessageContent = TextContent | DocumentContent;
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: MessageContent[];
 }
 
 export async function POST(req: Request) {
   try {
     const requestBody = await req.json();
-    const { prompt, model, temperature = 0.9, tokens = 500, filePath } = requestBody;
+    const { prompt, model, temperature = 0.9, tokens = 500, filePath, systemMessage } = requestBody;
 
+    console.log("Received systemMessage:", systemMessage);
     // Ensure the 'model' field is provided
     if (!model) {
       console.error("❌ ERROR: Missing 'model' field in the request body.");
@@ -52,10 +54,11 @@ export async function POST(req: Request) {
       },
     ];
 
+
     // If filePath is provided, read and encode the file
     if (filePath) {
       try {
-        const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
+        const absolutePath = path.join(process.cwd(), 'public', filePath);
         const fileContent = fs.readFileSync(absolutePath);
         const fileBase64 = fileContent.toString("base64");
         messages[0].content.push({
@@ -72,18 +75,21 @@ export async function POST(req: Request) {
       }
     }
 
-    // Send the API request
-    const anthropic = new Anthropic();
+    // Create Anthropic client
+    const anthropic = new Anthropic({ apiKey });
+
+    // Make API request
     const response = await anthropic.messages.create({
       model: model, // Use the provided model
-      messages:messages,
+      system: systemMessage,
+      messages:messages, // Correct the messages format
       max_tokens: tokens,
       temperature,
     });
 
     // Return the generated response
     console.log("🟢 Anthropic Generated Response:", response.content[0]?.text);
-    return new Response(JSON.stringify({ text:response.content[0]?.text }), {
+    return new Response(JSON.stringify({ text: response.content[0]?.text }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {

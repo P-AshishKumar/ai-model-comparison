@@ -2,7 +2,7 @@ export const questions = [
     {
         id: 1,
         title: "Mobile Security Policy",
-        question: "A university IT administrator discovers that a faculty member has installed a custom operating system on their university-provided smartphone. According to best practices aligned with WPI's Mobile Device Management Policy, what should happen next? choose the correct option",
+        question: "I have a Nokia 2017 that I want to use as a personal device and connect to university devices. Would using this device violate the mobile-device policy?",
         options: [
             "A) The device should be remotely wiped immediately",
             "B) The device should be confiscated and recycled",

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Loader2 } from "lucide-react"
-import { questions } from "@/components/questions"
+import { questions } from "@/components/prompt-question"
 import PromptTechniquePanel from "@/components/PromptTechniquePanel"
 
 interface Message {
@@ -48,7 +48,7 @@ export default function PromptTechniques() {
         fetch(`/api/generate/openai`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: technique.prompt(scenario), model: 'gpt-4o' }),
+          body: JSON.stringify({ prompt: technique.prompt(scenario), model: 'gpt-4o', systemMessage:"You are evaluator give a Yes or No answer" }),
         })
       )
 

@@ -9,6 +9,7 @@ import SinglePanelView from "@/components/single-panel-view"
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import aiCcoreLogo from '@/components/ailogo.svg'
+import PromptTechniques from "@/app/prompt-techniques"
 
 const COMPARE_SINGLE = 0
 const COMPARE_DOUBLE = 1
@@ -43,6 +44,7 @@ export default function PlaygroundPage() {
     "gemini-2.0-flash": "google"
   };
 
+  const [currentView, setCurrentView] = useState('playground')
   // Function to handle the message submission
   const handleSubmit = async (input: string) => {
     if (!input) return
@@ -60,7 +62,6 @@ export default function PlaygroundPage() {
 
       const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${input}`
 
-
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
         return fetch(`/api/generate/${endpoint}`, {
@@ -69,7 +70,6 @@ export default function PlaygroundPage() {
           body: JSON.stringify({
             prompt: conversationHistory,
             model,
-            //   filePath: "components/Mobile-Device-Policy.pdf",
           }),
         });
       });
@@ -100,29 +100,6 @@ export default function PlaygroundPage() {
     }
   }
 
-  // Add or remove models from selectedModels
-  //   const handleModelSelect = (model: string) => {
-  //   setSelectedModels((prevModels) => {
-  //     const updatedModels = []; // Create a shallow copy of the previous array
-  //     const index = updatedModels.indexOf(model);
-
-  //     if (index > -1) {
-  //       // If model exists in the array, remove it
-  //       updatedModels.splice(index, 1);
-  //     } else {
-  //       // Otherwise, add the model
-  //       updatedModels.push(model);
-  //     }
-
-  //     console.log("Updated models:", updatedModels);
-  //     return updatedModels; // Return the new array to trigger state update
-  //   });
-  // };
-
-
-
-
-
   const handleQuestionSelect = (question: { title: string, question: string, options: string[] }) => {
     setSelectedQuestion(question) // Update selected question
   }
@@ -138,8 +115,6 @@ export default function PlaygroundPage() {
     }
   }
 
-
-
   const compareQuestionSelect = async (question: { title: string, question: string, options: string[] }) => {
     const questionWithOptions = `${question.question}\nOptions:\n${question.options.join('\n')}`;
 
@@ -148,7 +123,7 @@ export default function PlaygroundPage() {
     setIsGenerating(true)
 
     try {
-      const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${question.question}`
+      const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${questionWithOptions}`
 
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
@@ -158,7 +133,8 @@ export default function PlaygroundPage() {
           body: JSON.stringify({
             prompt: conversationHistory,
             model,
-            filePath: "public/Mobile-Device-Policy.pdf",
+            filePath: "Mobile-Device-Policy.pdf",
+            systemMessage: "Provide the correct option from A, B, C, D. give clear and concise answer"
           }),
         });
       });
@@ -229,58 +205,71 @@ export default function PlaygroundPage() {
             <Eraser className="mr-2 h-4 w-4" />
             Clear
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-400 hover:text-white"
+            onClick={() => setCurrentView('prompt-techniques')} // Switch to PromptTechniques view
+          >
+            Prompt Techniques
+          </Button>
         </div>
       </header>
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {compareCount === COMPARE_SINGLE ? (
-          <SinglePanelView
-            response={responses.A}
-            isGenerating={isGenerating}
-            prompt={prompt}
-            onSubmit={handleSubmit}
-            messages={messages}
-            onQuestionSelect={handleQuestionSelect}
-            selectedQuestion={selectedQuestion}
-            setSelectedModels={setSelectedModels}  // Pass function to allow model selection
-            selectedModels={selectedModels}  // Pass selected models
-          />
+        {currentView === 'playground' ? (
+          compareCount === COMPARE_SINGLE ? (
+            <SinglePanelView
+              response={responses.A}
+              isGenerating={isGenerating}
+              prompt={prompt}
+              onSubmit={handleSubmit}
+              messages={messages}
+              onQuestionSelect={handleQuestionSelect}
+              selectedQuestion={selectedQuestion}
+              setSelectedModels={setSelectedModels}  // Pass function to allow model selection
+              selectedModels={selectedModels}  // Pass selected models
+            />
+          ) : (
+            <div className={`grid ${compareCount === COMPARE_DOUBLE ? "grid-cols-2" : "grid-cols-3"} gap-0 h-[calc(100vh-180px)] overflow-hidden`}>
+              {selectedModels.includes('gpt-4o') && (
+                <ModelPanel
+                  className="overflow-auto border-r border-gray-800/50"
+                  response={responses.A}
+                  isGenerating={isGenerating}
+                  prompt={prompt}
+                  showResponseArea={true}
+                  selectedModel="gpt-4o"
+                  messages={messages.filter((m) => m.panelId === 'A')}
+                />
+              )}
+              {selectedModels.includes('claude-3-7-sonnet-20250219') && (
+                <ModelPanel
+                  className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
+                  response={responses.B}
+                  isGenerating={isGenerating}
+                  showResponseArea={true}
+                  prompt={prompt}
+                  selectedModel="claude-3-7-sonnet-20250219"
+                  messages={messages.filter((m) => m.panelId === 'B')}
+                />
+              )}
+              {selectedModels.includes('gemini-2.0-flash') && (
+                <ModelPanel
+                  className="overflow-auto"
+                  response={responses.C}
+                  isGenerating={isGenerating}
+                  showResponseArea={true}
+                  prompt={prompt}
+                  selectedModel="gemini-2.0-flash"
+                  messages={messages.filter((m) => m.panelId === 'C')}
+                />
+              )}
+            </div>
+          )
         ) : (
-          <div className={`grid ${compareCount === COMPARE_DOUBLE ? "grid-cols-2" : "grid-cols-3"} gap-0 h-[calc(100vh-180px)] overflow-hidden`}>
-            {selectedModels.includes('gpt-4o') && (
-              <ModelPanel
-                className="overflow-auto border-r border-gray-800/50"
-                response={responses.A}
-                isGenerating={isGenerating}
-                prompt={prompt}
-                showResponseArea={true}
-                selectedModel="gpt-4o"
-                messages={messages.filter((m) => m.panelId === 'A')}
-              />
-            )}
-            {selectedModels.includes('claude-3-7-sonnet-20250219') && (
-              <ModelPanel
-                className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
-                response={responses.B}
-                isGenerating={isGenerating}
-                showResponseArea={true}
-                prompt={prompt}
-                selectedModel="claude-3-7-sonnet-20250219"
-                messages={messages.filter((m) => m.panelId === 'B')}
-              />
-            )}
-            {selectedModels.includes('gemini-2.0-flash') && (
-              <ModelPanel
-                className="overflow-auto" response={responses.C}
-                isGenerating={isGenerating}
-                showResponseArea={true}
-                prompt={prompt}
-                selectedModel="gemini-2.0-flash"
-                messages={messages.filter((m) => m.panelId === 'C')}
-              />
-            )}
-          </div>
+          <PromptTechniques />
         )}
       </div>
       {/* Chat input - only shown in compare mode, placed outside of the panel view */}

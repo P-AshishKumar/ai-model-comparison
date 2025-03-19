@@ -6,11 +6,13 @@ const client = new OpenAI();
 
 export async function POST(req: Request) {
   try {
-    const { prompt, model, filePath, temperature = 0.9, max_tokens = 500 } = await req.json();
+    const { prompt, model, filePath, temperature = 0.9, max_tokens = 500, systemMessage } = await req.json();
     console.log("Received model:", model);
     console.log("Received temperature:", temperature);
     console.log("Received max_tokens:", max_tokens);
     console.log("Received filePath:", filePath);
+    console.log("Received systemMessage:", systemMessage);
+    console.log("Received prompt:", prompt);
 
     // Default model to 'gpt-4' if not specified
     const modelName = model || "gpt-4";
@@ -20,7 +22,7 @@ export async function POST(req: Request) {
 
     // If filePath is provided, read the file
     if (filePath) {
-      const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
+      const absolutePath = path.join(process.cwd(), 'public', filePath);
       const fileBuffer = fs.createReadStream(absolutePath);
 
       // Upload file to OpenAI
@@ -49,6 +51,14 @@ export async function POST(req: Request) {
               },
             ],
           },
+          {
+            role: "assistant", 
+            content: [
+              {
+                type: "text",
+                text: systemMessage
+              }
+            ] },
         ],
         temperature,    // Pass the temperature parameter
         max_tokens,     // Pass the max_tokens parameter
@@ -66,6 +76,7 @@ export async function POST(req: Request) {
               },
             ],
           },
+          { role: "assistant", content: systemMessage },
         ],
         temperature,    // Pass the temperature parameter
         max_tokens,     // Pass the max_tokens parameter

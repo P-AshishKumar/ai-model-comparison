@@ -5,11 +5,13 @@ import path from 'path';
 
 export async function POST(req: Request) {
   try {
-    const { prompt, model, filePath, temperature = 0.9, max_tokens = 500 } = await req.json();
+    const { prompt, model, filePath, temperature = 0.9, max_tokens = 500, systemMessage } = await req.json();
     console.log("Received model:", model);
     console.log("Received temperature:", temperature);
     console.log("Received max_tokens:", max_tokens);
     console.log("Received filePath:", filePath);
+    console.log("Received systemMessage:", systemMessage);
+    console.log("Received prompt:", prompt);
 
     // Default model to the provided model or a default if missing
     const modelName = model;
@@ -17,7 +19,7 @@ export async function POST(req: Request) {
     // If filePath is provided, read the file
     let fileMessage = null;
     if (filePath) {
-      const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
+      const absolutePath = path.join(process.cwd(), 'public', filePath);
 
       // Read the file content
       const fileBuffer = fs.readFileSync(absolutePath);
@@ -45,6 +47,7 @@ export async function POST(req: Request) {
     // Generate text based on the provided prompt, file, temperature, and max_tokens
     const result = await generateText({
       model: google(modelName), // Passing the model
+      system: systemMessage,
       messages, // The messages array that includes text and file
       temperature,
       max_tokens,

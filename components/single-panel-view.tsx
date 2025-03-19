@@ -139,7 +139,6 @@ export default function SinglePanelView({ response, isGenerating, prompt, onSubm
         </div>
 
       <div className="selected-models mb-4 flex flex-wrap gap-2">
-  {console.log("Current selected models:", selectedModels)} {/* Log selectedModels */}
   {selectedModels.map((model) => (
     <div key={model} className="flex items-center bg-gray-700 text-white px-2 py-1 rounded">
       {model}
