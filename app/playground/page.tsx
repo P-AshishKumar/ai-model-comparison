@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeftRight, Eraser, ArrowLeft } from "lucide-react"
+import { ArrowLeftRight, Eraser, ArrowLeft, CheckCircle } from "lucide-react"
 import ChatInput from "@/components/chat-input"
 import ModelPanel from "@/components/model-panel"
 import SinglePanelView from "@/components/single-panel-view"
@@ -37,6 +37,19 @@ export default function PlaygroundPage() {
   })
   const [selectedQuestion, setSelectedQuestion] = useState<{ title: string, question: string, options: string[] } | null>(null)
   const [selectedModels, setSelectedModels] = useState<string[]>([])
+  
+  // Add the markExerciseComplete function here
+  const markExerciseComplete = (exerciseId: string) => {
+    // Get current completed exercises
+    const storedCompletedExercises = localStorage.getItem('completedExercises') || '[]';
+    const completedExercises = JSON.parse(storedCompletedExercises);
+    
+    // Add the current exercise if not already included
+    if (!completedExercises.includes(exerciseId)) {
+      completedExercises.push(exerciseId);
+      localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+    }
+  };
 
   const modelToEndpointMapping: { [key: string]: string } = {
     "gpt-4o": "openai",
@@ -172,9 +185,9 @@ export default function PlaygroundPage() {
     <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
       <header className="flex items-center justify-between px-4 h-14 border-b border-gray-800/50 backdrop-blur-sm bg-black/20 shrink-0">
         <div className="w-24">
-          <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-gray-400 hover:text-white">
+          <Button variant="ghost" size="sm" onClick={() => router.push('/week1')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Back
+            Back to Exercises
           </Button>
         </div>
 
@@ -271,6 +284,18 @@ export default function PlaygroundPage() {
         ) : (
           <PromptTechniques />
         )}
+      </div>
+      {/* Add this before the chat input or at the bottom of the main content */}
+      <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm flex justify-end">
+        <Button 
+          onClick={() => {
+            markExerciseComplete("exercise1");
+            router.push('/week1'); // Go back to exercises page
+          }}
+          className="bg-blue-900 hover:bg-blue-800 border border-blue-700/30 shadow-sm hover:shadow-[0_0_10px_rgba(30,64,175,0.4)] transition-all duration-300 text-white flex items-center gap-2"   >
+          <CheckCircle className="h-4 w-4" />
+          Complete Exercise
+        </Button>
       </div>
       {/* Chat input - only shown in compare mode, placed outside of the panel view */}
       {compareCount > COMPARE_SINGLE && (
