@@ -37,6 +37,11 @@ export default function PlaygroundPage() {
   })
   const [selectedQuestion, setSelectedQuestion] = useState<{ title: string, question: string, options: string[] } | null>(null)
   const [selectedModels, setSelectedModels] = useState<string[]>([])
+  const [isGeneratingPanels, setIsGeneratingPanels] = useState<{ [key: string]: boolean }>({
+    A: false,
+    B: false,
+    C: false,
+  });
 
   const modelToEndpointMapping: { [key: string]: string } = {
     "gpt-4o": "openai",
@@ -45,58 +50,79 @@ export default function PlaygroundPage() {
   };
 
   const [currentView, setCurrentView] = useState('playground')
+
   // Function to handle the message submission
   const handleSubmit = async (input: string) => {
-    if (!input) return
-    setPrompt(input)
-    setIsGenerating(true)
+    if (!input) return;
+    setPrompt(input);
+    setIsGenerating(true);
 
     const userMessage: Message = {
       role: 'user',
-      content: input
-    }
-    setMessages(prev => [...prev, userMessage])
+      content: input,
+    };
+    setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const panelsToGenerate = compareCount === COMPARE_SINGLE ? 1 : compareCount === COMPARE_DOUBLE ? 2 : 3
-
-      const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${input}`
+      const conversationHistory = messages.map((msg) => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${input}`;
 
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
+        const startTime = performance.now();
+        const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+        setIsGeneratingPanels(prev => ({ ...prev, [panelId]: true }));
         return fetch(`/api/generate/${endpoint}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: conversationHistory,
             model,
           }),
+        }).then(response => {
+          const endTime = performance.now();
+          return response.json().then(data => ({
+            model,
+            text: data.text,
+            responseTime: endTime - startTime,
+          }));
+        }).catch(error => {
+          if (error.name === 'AbortError') {
+            console.log(`Request for ${model} aborted due to timeout`);
+            return null;
+          }
+          throw error;
         });
       });
 
-      const results = await Promise.all(fetchPromises)
-      const dataPromises = results.map((res) => res.json())
-      const data = await Promise.all(dataPromises)
+      fetchPromises.forEach(async (fetchPromise, index) => {
+        try {
+          const result = await fetchPromise;
+          if (result) {
+            const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
 
-      const newResponses = { ...responses }
-      if (panelsToGenerate >= 1) {
-        newResponses.A = data[0].text
-        setMessages(prev => [...prev, { role: 'assistant', content: data[0].text, panelId: 'A' }])
-      }
-      if (panelsToGenerate >= 2) {
-        newResponses.B = data[1].text
-        setMessages(prev => [...prev, { role: 'assistant', content: data[1].text, panelId: 'B' }])
-      }
-      if (panelsToGenerate >= 3) {
-        newResponses.C = data[2].text
-        setMessages(prev => [...prev, { role: 'assistant', content: data[2].text, panelId: 'C' }])
-      }
+            setResponses(prevResponses => ({
+              ...prevResponses,
+              [panelId]: result.text,
+            }));
 
-      setResponses(newResponses)
+            setMessages(prevMessages => [
+              ...prevMessages,
+              { role: 'assistant', content: result.text, panelId },
+            ]);
+
+            console.log(`Response for ${panelId} received in ${result.responseTime.toFixed(2)} ms`);
+          }
+        } catch (error) {
+          console.error(`Error generating response for model ${selectedModels[index]}:`, error);
+        } finally {
+          const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+          setIsGeneratingPanels(prev => ({ ...prev, [panelId]: false }));
+        }
+      });
     } catch (error) {
-      console.error("Error generating responses:", error)
+      console.error('Error generating responses:', error);
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
   }
 
@@ -120,43 +146,86 @@ export default function PlaygroundPage() {
 
     // Update the prompt state with the question and options
     setPrompt(questionWithOptions);
-    setIsGenerating(true)
+    setIsGenerating(true);
 
     try {
-      const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${questionWithOptions}`
+      const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${questionWithOptions}`;
+
+      // Create an AbortController for each request
+      const controllers = selectedModels.map(() => new AbortController());
 
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
+        const startTime = performance.now();
+        const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+        setIsGeneratingPanels(prev => ({ ...prev, [panelId]: true }));
         return fetch(`/api/generate/${endpoint}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            // Add caching headers
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+          },
+          signal: controllers[index].signal, // Add abort signal
           body: JSON.stringify({
             prompt: conversationHistory,
             model,
             filePath: "Mobile-Device-Policy.pdf",
-            systemMessage: "Provide the correct option from A, B, C, D. give clear and concise answer"
+            systemMessage: "Provide the correct option from A, B, C, D. give clear and concise answer",
           }),
+        }).then(response => {
+          const endTime = performance.now();
+          return response.json().then(data => ({
+            model,
+            text: data.text,
+            responseTime: endTime - startTime,
+          }));
+        }).catch(error => {
+          if (error.name === 'AbortError') {
+            console.log(`Request for ${model} aborted due to timeout`);
+            return null;
+          }
+          throw error;
         });
       });
 
-      const results = await Promise.all(fetchPromises)
-      console.log("Result", results)
-      const data = await Promise.all(results.map(res => res.json()))
+      // Set timeout to abort requests after 15 seconds
+      setTimeout(() => {
+        controllers.forEach(controller => controller.abort());
+      }, 15000);
 
-      setResponses({
-        A: data[0]?.text || null,
-        B: data[1]?.text || null,
-        C: data[2]?.text || null,
-      })
-      console.log("Set Response", data[0].text)
-      console.log("Set Response", data[1].text)
-      console.log("Set Response", data[2].text)
+      fetchPromises.forEach(async (fetchPromise, index) => {
+        try {
+          const result = await fetchPromise;
+          if (result) {
+            const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+
+            setResponses(prevResponses => ({
+              ...prevResponses,
+              [panelId]: result.text,
+            }));
+
+            setMessages(prevMessages => [
+              ...prevMessages,
+              { role: 'assistant', content: result.text, panelId },
+            ]);
+
+            console.log(`Response for ${panelId} received in ${result.responseTime.toFixed(2)} ms`);
+          }
+        } catch (error) {
+          console.error(`Error generating response for model ${selectedModels[index]}:`, error);
+        } finally {
+          const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+          setIsGeneratingPanels(prev => ({ ...prev, [panelId]: false }));
+        }
+      });
     } catch (error) {
-      console.error("Error generating responses:", error)
+      console.error("Error generating responses:", error);
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   const handleClearChat = () => {
     setResponses({
@@ -237,7 +306,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className="overflow-auto border-r border-gray-800/50"
                   response={responses.A}
-                  isGenerating={isGenerating}
+                  isGenerating={isGeneratingPanels.A}
                   prompt={prompt}
                   showResponseArea={true}
                   selectedModel="gpt-4o"
@@ -248,7 +317,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
                   response={responses.B}
-                  isGenerating={isGenerating}
+                  isGenerating={isGeneratingPanels.B}
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="claude-3-7-sonnet-20250219"
@@ -259,7 +328,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className="overflow-auto"
                   response={responses.C}
-                  isGenerating={isGenerating}
+                  isGenerating={isGeneratingPanels.C}
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="gemini-2.0-flash"
@@ -273,11 +342,11 @@ export default function PlaygroundPage() {
         )}
       </div>
       {/* Chat input - only shown in compare mode, placed outside of the panel view */}
-      {compareCount > COMPARE_SINGLE && (
+      {/* {compareCount > COMPARE_SINGLE && (
         <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
           <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
         </div>
-      )}
+      )} */}
     </div>
   )
 }

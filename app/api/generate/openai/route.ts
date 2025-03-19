@@ -76,7 +76,7 @@ export async function POST(req: Request) {
               },
             ],
           },
-          { role: "assistant", content: systemMessage },
+          // { role: "assistant", content: systemMessage },
         ],
         temperature,    // Pass the temperature parameter
         max_tokens,     // Pass the max_tokens parameter

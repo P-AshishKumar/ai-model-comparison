@@ -15,22 +15,47 @@ const PROMPT_TECHNIQUES = [
   {
     id: 'zero-shot',
     title: 'Zero-shot Prompting',
-    prompt: (question: string) => `Question: ${question} Please give me a yes or no answer.`,
+    prompt: (question: string, scenarioId: string) => {
+      if (scenarioId === 'scenario1') {
+        return `Question: ${question} Please give me a yes or no answer.`
+      } else if (scenarioId === 'scenario2') {
+        return `Question: ${question}? Can you give the response as only no or yes?`
+      }
+    },
   },
   {
     id: 'few-shot',
     title: 'Few-shot Prompting',
-    prompt: (question: string) => `Example1: I have a Blackberry 2012 that I want to use as a personal device and connect to university devices. Would using this device violate the mobile-device policy? Please give me a yes or no answer. The answer is yes because blackberry 2012 no longer receives updates from the vendor and hence is a security risk.\n\nExample 2: I have a Samsung 2024 with original OS that I want to use as a personal device and connect to university devices. Would using this device violate the mobile-device policy? Please give me a yes or no answer. The answer is no because its OS is original, and it received updates. Now give me the answer for this question:\n\n${question} Please give me a yes or no answer.`,
+    prompt: (question: string, scenarioId: string) => {
+      if (scenarioId === 'scenario1') {
+        return `Example1: I have a Blackberry 2012 that I want to use as a personal device and connect to university devices. Would using this device violate the mobile-device policy? Please give me a yes or no answer. The answer is yes because blackberry 2012 no longer receives updates from the vendor and hence is a security risk.\n\nExample 2: I have a Samsung 2024 with original OS that I want to use as a personal device and connect to university devices. Would using this device violate the mobile-device policy? Please give me a yes or no answer. The answer is no because its OS is original, and it received updates. Now give me the answer for this question:\n\n${question} Please give me a yes or no answer.`
+      } else if (scenarioId === 'scenario2') {
+        return `Question: An employee's mobile device starts exhibiting unusual behavior. The battery drains quickly even when not in use. The device connects repeatedly to IP addresses in countries where the company doesn't operate. Apps the employee never installed appear in the app drawer, including one that requests unusual permissions. Does this device show clear evidence of being compromised?\n\nQuestion: An employee's mobile device starts exhibiting unusual behavior. The battery depletes unusually fast. Network logs show the device connecting to unrecognized servers with suspicious domain names. The security scan reveals hidden processes running in the background and unauthorized modifications to system files. Several unfamiliar applications with administrator privileges appear to be installed without the employee's knowledge. Does this device show clear evidence of being compromised?\n\nQuestion: ${question}`
+      }
+    },
   },
   {
     id: 'role-based',
     title: 'Role-based Prompting',
-    prompt: (question: string) => `You are a university IT compliance officer evaluating device requests. Your role is to determine if devices comply Mobile Device Management Policy. Please give me only yes or no as the answer. ${question}`,
+
+    prompt: (question: string, scenarioId: string) => {
+      if (scenarioId === 'scenario1') {
+        return `You are a university IT compliance officer evaluating device requests. Your role is to determine if devices comply Mobile Device Management Policy. Please give me only yes or no as the answer. ${question}`
+      } else if (scenarioId === 'scenario2') {
+        return `You are a cybersecurity analyst at a large corporation.  ${question}`
+      }
+    },
   },
   {
     id: 'chain-of-thought',
     title: 'Chain-of-thought Prompting',
-    prompt: (question: string) => `Determine whether using a Nokia 2017 phone to connect to university resources would violate Mobile Device Management Policy. Think through this step-by-step and answer yes or no:\n\nQuestion: ${question} Step 1: First, identify what the policy says about personally owned devices. Step 2: Check if there are OS requirements for personally owned devices. Step 3: Consider whether this device can still receive vendor updates.`,
+    prompt: (question: string, scenarioId: string) => {
+      if (scenarioId === 'scenario1') {
+        return `Determine whether using a Nokia 2017 phone to connect to university resources would violate Mobile Device Management Policy. Think through this step-by-step and answer yes or no:\n\nQuestion: ${question} Step 1: First, identify what the policy says about personally owned devices. Step 2: Check if there are OS requirements for personally owned devices. Step 3: Consider whether this device can still receive vendor updates.`
+      } else if (scenarioId === 'scenario2') {
+        return `Question: Analyze the following mobile device behavior to determine if it shows clear evidence of compromise:  ${question}`
+      }
+    },
   },
 ]
 
@@ -48,7 +73,7 @@ export default function PromptTechniques() {
         fetch(`/api/generate/openai`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: technique.prompt(scenario), model: 'gpt-4o', systemMessage:"You are evaluator give a Yes or No answer" }),
+          body: JSON.stringify({ prompt: technique.prompt(scenario, selectedScenario), model: 'gpt-4o', systemMessage: "You are evaluator give a Yes or No answer" }),
         })
       )
 
@@ -98,7 +123,7 @@ export default function PromptTechniques() {
                   key={technique.id}
                   techniqueId={technique.id}
                   techniqueTitle={technique.title}
-                  prompt={technique.prompt(selectedScenario)}
+                  prompt={technique.prompt(selectedScenario, selectedScenario)}
                   response={responses[technique.id]}
                   isGenerating={isGenerating}
                 />
