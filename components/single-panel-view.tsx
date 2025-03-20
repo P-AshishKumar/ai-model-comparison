@@ -67,7 +67,7 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
         <div className="content flex-1 overflow-auto">
           {/* Questions */}
           <div className="questions">
-            <div className="text-sm text-gray-400 mb-2 text-center">Select a Scenario:</div>
+            <div className="text-sm text-gray-400 mb-2 text-center">Select a Scenario</div>
             <div className="flex flex-col space-y-4 max-w-3xl mx-auto px-4">
               {questions.map((question) => (
                 <div

@@ -1,5 +1,6 @@
 import { FileText, CheckCircle2, AlertCircle, DollarSign, Zap } from "lucide-react"
 import { LucideIcon } from "lucide-react"
+import ClaimDetails from "./ClaimDetails"
 
 // Common type for icon representation in a TS file
 type TaskIcon = {
@@ -28,47 +29,15 @@ export const scenarioData = [
 ]
 
 export const medicalClaimData = {
-  patientName: "John Doe",
-  dateOfBirth: "03/15/1980",
-  memberId: "BCBS123456789",
-  providerName: "Dr. Emily Carter, MD",
-  providerNPI: "1234567890",
-  dateOfService: "02/25/2025",
-  placeOfService: "Outpatient Clinic",
-  diagnosisCode: "M54.5 (Low back pain)",
-  procedureCode: "99214 (Office visit, established patient, moderate complexity)",
-  billedAmount: "$250",
-  allowedAmount: "$150",
-  claimSubmissionDate: "02/26/2025",
-  insurancePlan: "Blue Cross Blue Shield PPO",
-  priorAuthRequired: "No",
-  claimStatus: "Pending",
+  claimDetails: `On February 25, 2025, John Doe, a 45-year-old marketing executive with a history of occasional back problems, visited Dr. Emily Carter at Riverside Medical Group's outpatient clinic. Mr. Doe had been experiencing worsening low back pain for approximately two weeks following a weekend of gardening at his suburban home. During the moderately complex office visit (CPT 99214), Dr. Carter evaluated his condition, diagnosed him with low back pain (ICD-10: M54.5), and prescribed muscle relaxants and physical therapy. The following day, February 26, the claim was submitted to doctors office to BCBs which is Mr. Doe's  insurance plan (Member ID: BCBS123456789). The visit was billed at $250, though the insurance's contracted rate allowed $150. No prior authorization was required for this service. The claim is currently in pending status while the insurance company processes it. Dr. Carter (NPI: 1234567890) expects payment to be processed within the standard 14-21 day timeframe.`
 }
 
 export const loanApplicationData = {
-  applicantName: "Sarah Thompson",
-  dateOfBirth: "06/12/1985",
-  businessName: "Thompson Family Farms",
-  loanType: "Operating Loan",
-  requestedAmount: "$250,000",
-  loanPurpose: "Purchase of farming equipment and operational expenses",
-  creditScore: "720",
-  annualRevenue: "$850,000",
-  debtToIncomeRatio: "35%",
-  collateral: "Farmland valued at $500,000",
-  loanHistory: "No prior defaults, previous FCSA loan repaid in full",
-  applicationDate: "03/10/2025",
-  status: "Pending Review"
+  claimDetails:`Sarah Thompson, a 39-year-old third-generation farmer from Cedar Valley, submitted a loan application on March 10, 2025, through the Farm Credit Service Administration. Her business, Thompson Family Farms (established 1978), is seeking a $250,000 operating loan primarily for purchasing a new John Deere tractor and covering seasonal planting expenses. With an impressive credit score of 720 and annual revenue of $850,000 from their diverse crop operation specializing in organic soybeans and corn, the application shows a manageable debt-to-income ratio of 35%. Sarah has offered her 120-acre parcel of fertile farmland (valued at $500,000) as collateral. Her loan history demonstrates financial responsibility, with no defaults and a previous FCSA loan completely repaid ahead of schedule. The application is currently pending review by regional loan officer Mark Jenkins, who typically processes similar requests within 14 business days. The unseasonably wet spring this year has prompted many local farmers to seek similar operating capital for delayed planting schedules.`
 }
 
 export const trainSensorData = {
-  locomotiveId: "UPX-2045",
-  engineTemperature: "210°F (Normal: 180-200°F)",
-  brakeWearLevel: "85% worn (Threshold: 75% for servicing)",
-  wheelBearingVibration: "6.5 mm/s² (Above normal range: 5 mm/s²)",
-  fuelEfficiencyDrop: "15% decrease over last 3 months",
-  lastMaintenanceDate: "12/15/2024 (Routine check)",
-  predictedComponentFailure: "Brake system within 10-15 days"
+ claimDetails:`Union Pacific locomotive UPX-2045, a GE Evolution Series diesel-electric engine operating on the Western Mountain route, is showing concerning maintenance indicators as of March 18, 2025. The locomotive's engine temperature of 210°F slightly exceeds normal operating range (180-200°F), likely due to the challenging 3.2% grade sections it regularly navigates. More worrying is the brake wear level at 85%, well beyond the 75% threshold that typically triggers immediate service. Engineers have also detected abnormal wheel bearing vibration measuring 6.5 mm/s² (normal range is below 5 mm/s²) during recent high-speed runs between Denver and Salt Lake City. Fuel efficiency has dropped 15% since December, despite the recent installation of aerodynamic fairings. The locomotive last underwent routine maintenance on December 15, 2024, when technicians noted minor cooling system irregularities but deemed them non-critical. Predictive analytics indicate potential brake system failure within 10-15 days, prompting operations manager Richard Chen to schedule emergency servicing at the Cheyenne maintenance facility for this weekend, requiring temporary reassignment of three freight routes.`
 }
 
 // Export icon objects for each task domain

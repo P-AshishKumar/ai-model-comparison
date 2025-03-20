@@ -13,9 +13,19 @@ interface ModelPanelProps {
   messages: Array<{ role: 'user' | 'assistant', content: string }>
   className?: string
   selectedModel: string
+  onRatingChange?: (modelId: string, ratings: Record<string, number>) => void // Add this prop
 }
 
-const ModelPanel: React.FC<ModelPanelProps> = ({ response, isGenerating, prompt, showResponseArea, messages, className, selectedModel }) => {
+const ModelPanel: React.FC<ModelPanelProps> = ({ 
+  response, 
+  isGenerating, 
+  prompt, 
+  showResponseArea, 
+  messages, 
+  className, 
+  selectedModel,
+  onRatingChange // Add this prop 
+}) => {
   const [ratings, setRatings] = useState({
     accuracy: 0,
     reasoning: 0,
@@ -25,7 +35,13 @@ const ModelPanel: React.FC<ModelPanelProps> = ({ response, isGenerating, prompt,
   });
 
   const handleRatingChange = (category: keyof typeof ratings, value: number) => {
-    setRatings(prev => ({ ...prev, [category]: value }));
+    const updatedRatings = { ...ratings, [category]: value };
+    setRatings(updatedRatings);
+    
+    // Notify parent component about rating change
+    if (onRatingChange) {
+      onRatingChange(selectedModel, updatedRatings);
+    }
   };
 
   const RatingStars = ({ category, label }: { category: keyof typeof ratings, label: string }) => {
@@ -104,12 +120,7 @@ const ModelPanel: React.FC<ModelPanelProps> = ({ response, isGenerating, prompt,
                         </div>
 
                         <div className="mt-4 flex justify-end">
-                          <Button
-                            size="sm"
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
-                          >
-                            Submit Feedback
-                          </Button>
+                          
                         </div>
                       </div>
                     )}

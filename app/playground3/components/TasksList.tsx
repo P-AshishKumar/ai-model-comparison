@@ -31,13 +31,17 @@ export default function TasksList({
     handleUsePrompt,
 }: TasksListProps) {
     // Find the current scenario object based on the selected ID
+
     const currentScenario = scenarioData.find(s => s.id === selectedScenario)
     
     // Filter tasks for the current scenario
+    console.log("selectedScenario", selectedScenario)
     const scenarioTasks = selectedScenario === "medical-claims" ? tasks.filter(t => !t.id.startsWith("medical-")) :
                           selectedScenario === "loan-application" ? tasks.filter(t => t.id.startsWith("loan-")) :
-                          selectedScenario === "predictive-maintenance" ? tasks.filter(t => t.id.startsWith("train-")) :
+                          selectedScenario === "predictive-maintenance" ? tasks.filter(t => t.id.startsWith("maint-")) :
                           tasks;
+
+    console.log("Current scenarioTasks", scenarioTasks)
     
     // Filter saved prompts for the current scenario
     const scenarioSavedPrompts = savedPrompts.filter(p => p.scenarioId === selectedScenario);

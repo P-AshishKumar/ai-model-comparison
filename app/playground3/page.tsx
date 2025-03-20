@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, Fragment } from "react"
 import { useRouter } from 'next/navigation'
 import ScenarioSelection from "./components/ScenarioSelection"
 import TasksList from "./components/TasksList"
 import ChatInterface from "./components/ChatInterface"
 import MainNavbar from "@/components/MainNavbar"
+import { CheckCircle } from "lucide-react"
 import { 
     scenarioData, 
     medicalClaimTasks, 
@@ -260,20 +261,78 @@ export default function Home() {
     // Get the current scenario data for rendering
     const currentScenarioData = getScenarioData();
 
+    const navSteps = [
+        {
+          number: 1,
+          label: "Scenario",
+          isActive: currentStep === "scenario",
+          isCompleted: currentStep === "task-selection" || currentStep === "chat"
+        },
+        {
+          number: 2,
+          label: "Task",
+          isActive: currentStep === "task-selection",
+          isCompleted: currentStep === "chat"
+        },
+        {
+          number: 3,
+          label: "Prompt",
+          isActive: currentStep === "chat",
+          isCompleted: false
+        }
+    ];
+
     return (
         <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
             <MainNavbar 
+                title={""} // Add the title prop using the function you already have
                 onBack={handleBackNavigation}
                 backLabel={currentStep === "scenario" ? "Back" : "Back"}
                 onClear={currentStep === "chat" ? handleClearChat : undefined}
             />
 
-            <div className="flex-1 overflow-auto">
-
-                <div className="text-center mb-6">
-                          <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 3 <span className="text-indigo-400">Design Prompts</span></h2>
+            {/* Add the progress indicator here */}
+            <div className="flex justify-center py-4 bg-gray-900/50 border-b border-gray-800">
+                <div className="flex items-center">
+                    {navSteps.map((navStep, index) => (
+                        <Fragment key={navStep.number}>
+                            {/* Step indicator */}
+                            <div className="flex flex-col items-center">
+                                <div 
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center mb-1
+                                    ${navStep.isActive 
+                                        ? 'bg-indigo-600 text-white' 
+                                        : navStep.isCompleted 
+                                        ? 'bg-green-600 text-white' 
+                                        : 'bg-gray-700 text-gray-300'
+                                    }`}
+                                >
+                                    {navStep.isCompleted ? (
+                                        <CheckCircle className="h-4 w-4" />
+                                    ) : (
+                                        navStep.number
+                                    )}
+                                </div>
+                                <span className={`text-xs ${navStep.isActive ? 'text-indigo-300 font-medium' : 'text-gray-400'}`}>
+                                    {navStep.label}
+                                </span>
+                            </div>
+                            
+                            {/* Connector line between steps (except after the last step) */}
+                            {index < navSteps.length - 1 && (
+                                <div 
+                                    className={`w-12 h-0.5 mx-2 
+                                    ${index < (currentStep === "scenario" ? 0 : currentStep === "task-selection" ? 1 : 2) 
+                                        ? 'bg-green-600' 
+                                        : 'bg-gray-700'}`}
+                                ></div>
+                            )}
+                        </Fragment>
+                    ))}
                 </div>
+            </div>
 
+            <div className="flex-1 overflow-auto">
                 <main className="min-h-full">
                     {currentStep === "scenario" && (
                         <ScenarioSelection 

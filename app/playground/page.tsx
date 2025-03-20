@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Fragment, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeftRight, Eraser, ArrowLeft, CheckCircle } from "lucide-react"
+import { ArrowLeftRight, Eraser, ArrowLeft, CheckCircle, MessageCircle, Loader2 } from "lucide-react"
 import ChatInput from "@/components/chat-input"
 import ModelPanel from "@/components/model-panel"
 import SinglePanelView from "@/components/single-panel-view"
@@ -10,6 +10,14 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import aiCcoreLogo from '@/components/ailogo.svg'
 import PromptTechniques from "@/app/prompt-techniques"
+
+
+// Progress bar steps
+const steps = [
+  { number: 1, label: "Select Model", isCompleted: true, isActive: false },
+  { number: 2, label: "Select Question", isCompleted: false, isActive: true },
+  { number: 3, label: "Compare Results", isCompleted: false, isActive: false }
+];
 
 const COMPARE_SINGLE = 0
 const COMPARE_DOUBLE = 1
@@ -64,6 +72,55 @@ export default function PlaygroundPage() {
   };
 
   const [currentView, setCurrentView] = useState('playground')
+  // Add this state to track whether we're in discussion mode
+  const [isDiscussMode, setIsDiscussMode] = useState(false);
+  // Add this state to track ratings for each model
+  const [modelRatings, setModelRatings] = useState<Record<string, Record<string, number>>>({});
+  const [showRatingWarning, setShowRatingWarning] = useState(false);
+
+  // Add this before the areAllRatingsComplete function
+  useEffect(() => {
+    console.log("Model ratings updated:", modelRatings);
+  }, [modelRatings]);
+
+  // Update the areAllRatingsComplete function with debug info
+  const areAllRatingsComplete = () => {
+    // Get models that have responses
+    const modelsWithResponses = selectedModels.filter(model => {
+      if (model === 'gpt-4o') return responses.A !== null;
+      if (model === 'claude-3-7-sonnet-20250219') return responses.B !== null;
+      if (model === 'gemini-2.0-flash') return responses.C !== null;
+      return false;
+    });
+    
+    console.log("Models with responses:", modelsWithResponses);
+    
+    // Check if all models have ratings
+    const result = modelsWithResponses.every(model => {
+      const ratings = modelRatings[model];
+      console.log(`Checking ratings for ${model}:`, ratings);
+      return ratings && 
+        ratings.accuracy > 0 && 
+        ratings.reasoning > 0 && 
+        ratings.completeness > 0 && 
+        ratings.clarity > 0 && 
+        ratings.responseTime > 0;
+    });
+    
+    console.log("All ratings complete:", result);
+    return result;
+  };
+
+  // Handle rating changes from ModelPanel
+  const handleRatingChange = (modelId: string, ratings: Record<string, number>) => {
+    setModelRatings(prev => ({
+      ...prev,
+      [modelId]: ratings
+    }));
+    // Clear warning when users start rating
+    setShowRatingWarning(false);
+  };
+
   // Function to handle the message submission
   const handleSubmit = async (input: string) => {
     if (!input) return
@@ -230,51 +287,182 @@ export default function PlaygroundPage() {
     setMessages([])
   }
 
+  // Set progress steps based on state
+  const navSteps = [
+    {
+      number: 1,
+      label: "Select LLM Model",
+      isActive: compareCount === COMPARE_SINGLE && selectedModels.length < 2, // Active until at least 2 models are selected
+      isCompleted: selectedModels.length >= 2 // Completed only when 2+ models are selected
+    },
+    {
+      number: 2,
+      label: "Select Scenario",
+      isActive: compareCount === COMPARE_SINGLE && selectedModels.length >= 2 && !selectedQuestion, // Only active after step 1 is complete
+      isCompleted: selectedQuestion !== null
+    },
+    {
+      number: 3,
+      label: "Compare Models",
+      isActive: (compareCount === COMPARE_SINGLE && selectedModels.length >= 2 && selectedQuestion !== null) || compareCount > COMPARE_SINGLE,
+      isCompleted: compareCount > COMPARE_SINGLE && responses.A !== null
+    }
+  ];
+
+  // Add this helper function to check if we have any API responses
+  const hasAnyResponses = () => {
+    return responses.A !== null || responses.B !== null || responses.C !== null;
+  };
+
   return (
     <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
       <header className="flex items-center justify-between px-4 h-14 border-b border-gray-800/50 backdrop-blur-sm bg-black/20 shrink-0">
         <div className="w-24">
-          <Button variant="ghost" size="sm" onClick={() => router.push('/week1')} className="text-gray-400 hover:text-white">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back
-          </Button>
+          {compareCount > COMPARE_SINGLE ? (
+            // Back button in comparison view - goes back to selection screen
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                setCompareCount(COMPARE_SINGLE);
+                // Reset responses when going back
+                setResponses({
+                  A: null,
+                  B: null,
+                  C: null,
+                });
+              }} 
+              className="text-gray-400 hover:text-white"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Back
+            </Button>
+          ) : (
+            // Regular back button in selection view
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => router.push('/week1')} 
+              className="text-gray-400 hover:text-white"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Back
+            </Button>
+          )}
         </div>
 
-          <div className="flex-1 flex justify-center items-center text-white font-semibold text-lg">
-    <div className="flex items-center">
-      <Image
-        src={aiCcoreLogo}
-        alt="AI-CCORE Logo"
-        width={120}
-        height={115}
-      />
-      {/* <span>Playground</span> */}
-    </div>
-  </div>
+        <div className="flex-1 flex justify-center items-center text-white font-semibold text-lg">
+          <div className="flex items-center">
+            <Image
+              src={aiCcoreLogo}
+              alt="AI-CCORE Logo"
+              width={120}
+              height={115}
+            />
+          </div>
+        </div>
+        
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" onClick={handleCompareClick} className="text-gray-400 hover:text-white" disabled={selectedModels.length < 2}>
-            <ArrowLeftRight className="mr-2 h-4 w-4" />
-            Compare Models
-          </Button>
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white"
-            onClick={handleClearChat}
-          >
-            <Eraser className="mr-2 h-4 w-4" />
-            Clear
-          </Button> */}
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white"
-            onClick={() => setCurrentView('prompt-techniques')} // Switch to PromptTechniques view
-          >
-            Prompt Techniques
-          </Button> */}
+          {compareCount === COMPARE_SINGLE ? (
+            // Show Compare Models button only in selection view
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleCompareClick} 
+              className="text-gray-400 hover:text-white" 
+              disabled={selectedModels.length < 2}
+            >
+              <ArrowLeftRight className="mr-2 h-4 w-4" />
+              Compare Models
+            </Button>
+          ) : (
+            // Only show Discuss/Complete buttons if we have at least one response
+            hasAnyResponses() ? (
+              <Button
+                onClick={() => {
+                  if (isDiscussMode) {
+                    // If already in discuss mode, mark as complete and go back
+                    markExerciseComplete("exercise1");
+                    router.push('/week1');
+                  } else {
+                    // Check if all ratings are complete before allowing discuss mode
+                    if (areAllRatingsComplete()) {
+                      setIsDiscussMode(true);
+                      // Here you could also trigger loading discussion content
+                    } else {
+                      // Show warning if ratings are incomplete
+                      setShowRatingWarning(true);
+                    }
+                  }
+                }}
+                className="bg-blue-900 hover:bg-blue-800 border border-blue-700/30 shadow-sm hover:shadow-[0_0_10px_rgba(30,64,175,0.4)] transition-all duration-300 text-white flex items-center gap-2"
+              >
+                {isDiscussMode ? (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    Complete Exercise
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle className="h-4 w-4" />
+                    Discuss
+                  </>
+                )}
+              </Button>
+            ) : (
+              // Show a disabled button while waiting for responses
+              <Button
+                disabled
+                className="bg-blue-900/50 border border-blue-700/30 text-white flex items-center gap-2 opacity-70"
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Waiting for responses...
+              </Button>
+            )
+          )}
         </div>
       </header>
+
+      {/* Add progress bar here */}
+      <div className="flex justify-center py-4 bg-gray-900/50 border-b border-gray-800">
+        <div className="flex items-center">
+          {navSteps.map((navStep, index) => (
+            <Fragment key={navStep.number}>
+              {/* Step indicator */}
+              <div className="flex flex-col items-center">
+                <div 
+                  className={`w-8 h-8 rounded-full flex items-center justify-center mb-1
+                    ${navStep.isActive 
+                      ? 'bg-indigo-600 text-white' 
+                      : navStep.isCompleted 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-gray-700 text-gray-300'
+                    }`}
+                >
+                  {navStep.isCompleted && !navStep.isActive ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    navStep.number
+                  )}
+                </div>
+                <span className={`text-xs ${navStep.isActive ? 'text-indigo-300 font-medium' : 'text-gray-400'}`}>
+                  {navStep.label}
+                </span>
+              </div>
+              
+              {/* Connector line between steps (except after the last step) */}
+              {index < navSteps.length - 1 && (
+                <div 
+                  className={`w-12 h-0.5 mx-2 
+                    ${navSteps.findIndex(step => step.isActive) > index || 
+                      (index < navSteps.length - 1 && navSteps[index].isCompleted && navSteps[index+1].isCompleted)
+                      ? 'bg-green-600' : 'bg-gray-700'}`}
+                ></div>
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -301,6 +489,7 @@ export default function PlaygroundPage() {
                   prompt={prompt}
                   showResponseArea={true}
                   selectedModel="gpt-4o"
+                  onRatingChange={handleRatingChange}
                   messages={messages.filter((m) => m.panelId === 'A')}
                 />
               )}
@@ -312,6 +501,7 @@ export default function PlaygroundPage() {
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="claude-3-7-sonnet-20250219"
+                  onRatingChange={handleRatingChange}  // Add this prop
                   messages={messages.filter((m) => m.panelId === 'B')}
                 />
               )}
@@ -323,6 +513,7 @@ export default function PlaygroundPage() {
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="gemini-2.0-flash"
+                  onRatingChange={handleRatingChange}  // Add this prop
                   messages={messages.filter((m) => m.panelId === 'C')}
                 />
               )}
@@ -332,24 +523,19 @@ export default function PlaygroundPage() {
           <PromptTechniques />
         )}
       </div>
-      {/* Add this before the chat input or at the bottom of the main content */}
-      <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm flex justify-end">
-        <Button
-          onClick={() => {
-            markExerciseComplete("exercise1");
-            router.push('/week1'); // Go back to exercises page
-          }}
-          className="bg-blue-900 hover:bg-blue-800 border border-blue-700/30 shadow-sm hover:shadow-[0_0_10px_rgba(30,64,175,0.4)] transition-all duration-300 text-white flex items-center gap-2"   >
-          <CheckCircle className="h-4 w-4" />
-          Complete Exercise
-        </Button>
-      </div>
       {/* Chat input - only shown in compare mode, placed outside of the panel view */}
       {/* {compareCount > COMPARE_SINGLE && (
         <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
           <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
         </div>
       )} */}
+
+      {/* Add warning message */}
+      {showRatingWarning && (
+        <div className="absolute top-16 right-4 bg-red-900/80 text-white px-4 py-2 rounded shadow-md z-20">
+          Please complete all ratings before proceeding
+        </div>
+      )}
     </div>
   )
 }
