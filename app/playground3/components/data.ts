@@ -9,21 +9,21 @@ type TaskIcon = {
 export const scenarioData = [
   {
     id: "medical-claims",
-    title: "Medical Claims Processing",
+    title: "Claims Processing",
     description:
-      "Employees at Blue Cross Blue Shield (BCBS) work with large volumes of medical claims that need to be processed efficiently while ensuring accuracy in coding, fraud detection, and compliance with insurance policies. The goal is to develop AI-powered automation that assists in claim validation, fraud detection, and ensuring compliance with regulatory requirements.",
+      "Employees at Insurance Agencies work with large volumes of  claims that need to be processed efficiently while ensuring accuracy in claim codes, fraud detection, and compliance with insurance policies. The goal is to develop AI-powered automation that assists in claim validation, fraud detection, and ensuring compliance with regulatory requirements.",
   },
   {
     id: "loan-application",
-    title: "AI-Powered Loan Application Review",
+    title: "Loan Application Review",
     description:
-      "Farm Credit Services of America (FCSA) provides loans to farmers, ranchers, and agribusinesses. Employees review loan applications to assess eligibility, financial risk, and compliance with lending policies. The goal of this exercise is to refine AI-powered prompts that assist in automating the loan review process while ensuring accuracy and adherence to FCSA's lending guidelines.",
+      "Banks and Credit Unions provide loans to individuals, organizations, and businesses. Employees review loan applications to assess eligibility, financial risk, and compliance with lending policies. The goal of this exercise is to refine AI-powered prompts that assist in automating the loan review process while ensuring accuracy and adherence to loan agencies lending guidelines.",
   },
   {
     id: "predictive-maintenance",
-    title: "AI-Powered Predictive Maintenance",
+    title: "Transport Predictive Maintenance ",
     description:
-      "Union Pacific operates one of the largest railroad networks in North America, where efficient maintenance of trains and tracks is critical for safety, cost reduction, and operational efficiency. Employees must monitor equipment conditions, predict failures, and schedule maintenance proactively to prevent delays and accidents. The goal of this exercise is to refine AI-powered prompts that assist in predictive maintenance decision-making while ensuring accurate and timely interventions.",
+      "In transport industries efficient maintenance of trucks, trains and tracks, ships, flights is critical for safety, cost reduction, and operational efficiency. Employees must monitor equipment conditions, predict failures, and schedule maintenance proactively to prevent delays and accidents. The goal of this exercise is to refine AI-powered prompts that assist in predictive maintenance decision-making while ensuring accurate and timely interventions.",
   }
 ]
 

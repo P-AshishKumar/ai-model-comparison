@@ -269,6 +269,11 @@ export default function Home() {
             />
 
             <div className="flex-1 overflow-auto">
+
+                <div className="text-center mb-6">
+                          <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 3 <span className="text-indigo-400">Design Prompts</span></h2>
+                </div>
+
                 <main className="min-h-full">
                     {currentStep === "scenario" && (
                         <ScenarioSelection 

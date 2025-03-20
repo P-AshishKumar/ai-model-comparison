@@ -188,7 +188,7 @@ const Screen2 = ({
                                 )}
                             </div>
                             <CardDescription className={isExerciseActive("exercise3") ? "text-indigo-200" : "text-gray-400"}>
-                                Prompt Engineering 
+                                Design Prompts
                             </CardDescription>
                         </CardHeader>
                         <CardContent className={isExerciseActive("exercise3") ? "text-gray-200" : "text-gray-300"}>
