@@ -22,12 +22,12 @@ const Screen1 = () => {
                 <div className="container mx-auto flex items-center px-4">
                     <div className="flex items-center text-white font-semibold text-lg">
                         {/* Replace with your actual logo path */}
-                        <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
-                            <span className="text-white font-bold">AI</span>
-                        </div>
-                        <span className="text-gray-400">AI-CCORE</span>
-                        <span className="mx-2 text-gray-600">|</span>
-                        <span className="text-white">AI-Bootcamp Labs</span>
+                       { /*<div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
+                          <span className="text-white font-bold">AI</span>
+                        </div>*/ }
+                        <span className="text-gray-400"></span>
+                        <span className="mx-2 text-gray-600"></span>
+                        {/*<span className="text-white">AI-Bootcamp Labs</span>*/}
                     </div>
                 </div>
             </header>
@@ -49,10 +49,8 @@ const Screen1 = () => {
                     <Card className="bg-gradient-to-br from-indigo-900/80 to-blue-900/80 border border-indigo-500/50 shadow-lg hover:shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-2xl text-white">Week 1</CardTitle>
-                            <CardDescription className="text-indigo-200">AI Model Comparison</CardDescription>
                         </CardHeader>
                         <CardContent className="text-gray-200">
-                            <p>Compare responses from leading LLMs including GPT-4o, Claude, and Gemini. Analyze performance across different prompting techniques.</p>
                         </CardContent>
                         <CardFooter>
                             <Button
@@ -68,10 +66,10 @@ const Screen1 = () => {
                     <Card className="bg-gray-900/80 border border-gray-800/50 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-2xl text-gray-200">Week 2</CardTitle>
-                            <CardDescription className="text-gray-400">Prompt Engineering</CardDescription>
+                            {/*<CardDescription className="text-gray-400">Prompt Engineering</CardDescription>*/}
                         </CardHeader>
                         <CardContent className="text-gray-300">
-                            <p>Learn advanced prompt engineering techniques to get the most effective results from different AI models.</p>
+                           {/* <p>Learn advanced prompt engineering techniques to get the most effective results from different AI models.</p>*/}
                         </CardContent>
                         <CardFooter>
                             <Button
@@ -87,10 +85,10 @@ const Screen1 = () => {
                     <Card className="bg-gray-900/80 border border-gray-800/50 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-2xl text-gray-200">Week 3</CardTitle>
-                            <CardDescription className="text-gray-400">RAG Implementation</CardDescription>
+                           {/*} <CardDescription className="text-gray-400">RAG Implementation</CardDescription>*/}
                         </CardHeader>
                         <CardContent className="text-gray-300">
-                            <p>Build Retrieval-Augmented Generation systems to enhance LLM responses with external knowledge sources.</p>
+                            {/*<p>Build Retrieval-Augmented Generation systems to enhance LLM responses with external knowledge sources.</p>*/}
                         </CardContent>
                         <CardFooter>
                             <Button
@@ -106,10 +104,10 @@ const Screen1 = () => {
                     <Card className="bg-gray-900/80 border border-gray-800/50 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-2xl text-gray-200">Week 4</CardTitle>
-                            <CardDescription className="text-gray-400">Fine-tuning & Evaluation</CardDescription>
+                            {/*<CardDescription className="text-gray-400">Fine-tuning & Evaluation</CardDescription>*/}
                         </CardHeader>
                         <CardContent className="text-gray-300">
-                            <p>Learn techniques for customizing foundation models and properly evaluating AI model performance.</p>
+                           {/* <p>Learn techniques for customizing foundation models and properly evaluating AI model performance.</p>*/}
                         </CardContent>
                         <CardFooter>
                             <Button
@@ -126,7 +124,7 @@ const Screen1 = () => {
             {/* Footer */}
             <footer className="border-t border-gray-800/50 py-6 mt-auto backdrop-blur-sm bg-black/20">
                 <div className="container mx-auto text-center text-gray-500 text-sm">
-                    <p>© 2024 AI-CCORE Bootcamp Labs. All rights reserved.</p>
+                    <p>© 2025 AI-CCORE Bootcamp Labs. All rights reserved.</p>
                 </div>
             </footer>
         </div>

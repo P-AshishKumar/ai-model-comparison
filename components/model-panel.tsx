@@ -3,7 +3,8 @@
 import * as React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Save, Copy, X, Loader2, Star } from "lucide-react"
+import { Save, Copy, X, Loader2, Star, ArrowLeft } from "lucide-react"
+import { useRouter } from 'next/navigation'
 
 interface ModelPanelProps {
   response: string | null
@@ -16,6 +17,7 @@ interface ModelPanelProps {
 }
 
 const ModelPanel: React.FC<ModelPanelProps> = ({ response, isGenerating, prompt, showResponseArea, messages, className, selectedModel }) => {
+  const router = useRouter();
   const [ratings, setRatings] = useState({
     accuracy: 0,
     reasoning: 0,
@@ -51,23 +53,24 @@ const ModelPanel: React.FC<ModelPanelProps> = ({ response, isGenerating, prompt,
   };
 
   return (
-    <div className={`h-full flex flex-col border-r border-gray-800/50 bg-gradient-to-b from-gray-950 via-gray-900 to-blue-950 ${className}`}>
-      {/* Panel header */}
+    <div className={`h-full flex flex-col border-r border-gray-800/50 bg-gradient-to-b from-gray-950 via-gray-900 to-blue-950}`}>
+      {/* My new custom header */}
       <div className="flex items-center justify-between p-2 border-b border-gray-800/50 bg-black/20 backdrop-blur-sm">
-        <div className="flex-1 flex justify-center items-center space-x-2">
-          <div className="text-sm text-white">{selectedModel}</div>
-        </div>
-        <div className="flex items-center space-x-1">
-          {/* <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Save className="h-4 w-4" />
+        <div className="w-24">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/playground')}
+            className="text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            Back
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Copy className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <X className="h-4 w-4" />
-          </Button> */}
         </div>
+        <div className="flex-1 flex justify-center items-center">
+          <div className="text-sm text-white font-medium">{selectedModel}</div>
+        </div>
+        <div className="w-24"></div> {/* Empty div for balanced spacing */}
       </div>
 
       {/* Panel content */}
