@@ -38,6 +38,12 @@ export default function PlaygroundPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<{ title: string, question: string, options: string[] } | null>(null)
   const [selectedModels, setSelectedModels] = useState<string[]>([])
 
+  const [isGeneratingPanels, setIsGeneratingPanels] = useState<{ [key: string]: boolean }>({
+    A: false,
+    B: false,
+    C: false,
+  });
+
   // Add the markExerciseComplete function here
   const markExerciseComplete = (exerciseId: string) => {
     // Get current completed exercises
@@ -291,7 +297,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className="overflow-auto border-r border-gray-800/50"
                   response={responses.A}
-                  isGenerating={isGenerating}
+                  isGenerating={isGeneratingPanels.A}
                   prompt={prompt}
                   showResponseArea={true}
                   selectedModel="gpt-4o"
@@ -302,7 +308,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
                   response={responses.B}
-                  isGenerating={isGenerating}
+                  isGenerating={isGeneratingPanels.B}
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="claude-3-7-sonnet-20250219"
@@ -313,7 +319,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className="overflow-auto"
                   response={responses.C}
-                  isGenerating={isGenerating}
+                  isGenerating={isGeneratingPanels.C}
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="gemini-2.0-flash"
@@ -339,11 +345,11 @@ export default function PlaygroundPage() {
         </Button>
       </div>
       {/* Chat input - only shown in compare mode, placed outside of the panel view */}
-      {compareCount > COMPARE_SINGLE && (
+      {/* {compareCount > COMPARE_SINGLE && (
         <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
           <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
         </div>
-      )}
+      )} */}
     </div>
   )
 }
