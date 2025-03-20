@@ -236,7 +236,7 @@ export default function PlaygroundPage() {
         <div className="w-24">
           <Button variant="ghost" size="sm" onClick={() => router.push('/week1')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Exercises
+            Back
           </Button>
         </div>
 

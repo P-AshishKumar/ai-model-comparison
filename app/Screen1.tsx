@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight } from 'lucide-react'
+import MainNavbar from "@/components/MainNavbar" // Import MainNavbar
 
 const Screen1 = () => {
     const router = useRouter();
@@ -17,26 +18,23 @@ const Screen1 = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950">
-            {/* Header */}
-            <header className="border-b border-gray-800/50 py-4 backdrop-blur-sm bg-black/20 sticky top-0 z-10">
-                <div className="container mx-auto flex items-center px-4">
-                    <div className="flex items-center text-white font-semibold text-lg">
-                        {/* Replace with your actual logo path */}
-                        <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
-                            <span className="text-white font-bold">AI</span>
-                        </div>
-                        <span className="text-gray-400">AI-CCORE</span>
-                        <span className="mx-2 text-gray-600">|</span>
-                        <span className="text-white">AI-Bootcamp Labs</span>
-                    </div>
-                </div>
-            </header>
+            {/* Replace the header with MainNavbar */}
+            <MainNavbar 
+                // title="AI Bootcamp Labs"
+                // subtitle="Learning Portal"
+                // No backUrl needed here since this is the main page
+                // rightContent={
+                //     <div className="flex items-center gap-2">
+                //         <span className="text-sm text-gray-400">AI-CCORE</span>
+                //     </div>
+                // }
+            />
 
             {/* Main content */}
             <main className="flex-grow container mx-auto py-12 px-4">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-                        AI Bootcamp <span className="text-indigo-400">Labs</span>
+                        AI-CCORE <span className="text-indigo-400">Labs</span>
                     </h1>
                     <p className="text-xl text-gray-300 max-w-2xl mx-auto">
                         Explore our four-week curriculum with hands-on lab exercises
@@ -51,9 +49,9 @@ const Screen1 = () => {
                             <CardTitle className="text-2xl text-white">Week 1</CardTitle>
                             <CardDescription className="text-indigo-200">AI Model Comparison</CardDescription>
                         </CardHeader>
-                        <CardContent className="text-gray-200">
+                        {/* <CardContent className="text-gray-200">
                             <p>Compare responses from leading LLMs including GPT-4o, Claude, and Gemini. Analyze performance across different prompting techniques.</p>
-                        </CardContent>
+                        </CardContent> */}
                         <CardFooter>
                             <Button
                                 onClick={handleWeek1Click}
@@ -70,9 +68,9 @@ const Screen1 = () => {
                             <CardTitle className="text-2xl text-gray-200">Week 2</CardTitle>
                             <CardDescription className="text-gray-400">Prompt Engineering</CardDescription>
                         </CardHeader>
-                        <CardContent className="text-gray-300">
+                        {/* <CardContent className="text-gray-300">
                             <p>Learn advanced prompt engineering techniques to get the most effective results from different AI models.</p>
-                        </CardContent>
+                        </CardContent> */}
                         <CardFooter>
                             <Button
                                 disabled
@@ -89,9 +87,9 @@ const Screen1 = () => {
                             <CardTitle className="text-2xl text-gray-200">Week 3</CardTitle>
                             <CardDescription className="text-gray-400">RAG Implementation</CardDescription>
                         </CardHeader>
-                        <CardContent className="text-gray-300">
+                        {/* <CardContent className="text-gray-300">
                             <p>Build Retrieval-Augmented Generation systems to enhance LLM responses with external knowledge sources.</p>
-                        </CardContent>
+                        </CardContent> */}
                         <CardFooter>
                             <Button
                                 disabled
@@ -108,9 +106,9 @@ const Screen1 = () => {
                             <CardTitle className="text-2xl text-gray-200">Week 4</CardTitle>
                             <CardDescription className="text-gray-400">Fine-tuning & Evaluation</CardDescription>
                         </CardHeader>
-                        <CardContent className="text-gray-300">
+                        {/* <CardContent className="text-gray-300">
                             <p>Learn techniques for customizing foundation models and properly evaluating AI model performance.</p>
-                        </CardContent>
+                        </CardContent> */}
                         <CardFooter>
                             <Button
                                 disabled

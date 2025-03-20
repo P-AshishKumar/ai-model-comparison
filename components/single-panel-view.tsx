@@ -38,7 +38,7 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
       <div className="w-full flex flex-col p-4">
         {/* Add exercise title in header */}
         <div className="text-center mb-6">
-          <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 1: <span className="text-indigo-400">Compare LLM Models</span></h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 1 <span className="text-indigo-400">Compare LLM Models</span></h2>
         </div>
         <div className="header mb-4 flex items-center space-x-2">
           <ModelSelector selectedModels={selectedModels} onModelChange={setSelectedModels} />
@@ -67,22 +67,44 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
         <div className="content flex-1 overflow-auto">
           {/* Questions */}
           <div className="questions">
-            <div className="text-sm text-gray-400 mb-2 text-center">Select a Scenario:</div>            <div className="flex flex-col space-y-4 max-w-3xl mx-auto px-4">
+            <div className="text-sm text-gray-400 mb-2 text-center">Select a Scenario:</div>
+            <div className="flex flex-col space-y-4 max-w-3xl mx-auto px-4">
               {questions.map((question) => (
                 <div
                   key={question.id}
-                  className={`p-3 border border-gray-700 rounded-lg cursor-pointer bg-gradient-to-r from-gray-900 to-gray-800 hover:border-blue-500/50 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-all duration-300 
-                  ${selectedQuestion?.id === question.id
-                      ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] bg-gradient-to-r from-blue-700 to-blue-800'
-                      : 'hover:bg-gray-700'}`}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
+                    selectedQuestion?.id === question.id
+                      ? 'border-indigo-500 bg-gradient-to-br from-indigo-900/80 to-blue-900/80 shadow-[0_0_20px_rgba(99,102,241,0.5)] transform scale-[1.02]'
+                      : 'border-gray-700 bg-gradient-to-r from-gray-900 to-gray-800 hover:border-blue-500/50 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                  }`}
                   onClick={() => handleQuestionSelect(question)}
                 >
-                  <div className="text-white font-semibold mb-2">{question.title}</div>
-                  <div className="text-gray-300 mb-2">{question.question}</div>
-                  <ul className="space-y-1">
+                  {/* Add a visual indicator for selected question */}
+                  {selectedQuestion?.id === question.id && (
+                    <div className="absolute top-2 right-2">
+                      <span className="bg-indigo-600/60 text-indigo-200 text-xs px-2 py-1 rounded-full flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                        Selected
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className={`text-xl font-semibold mb-3 ${selectedQuestion?.id === question.id ? 'text-white' : 'text-white'}`}>
+                    {question.title}
+                  </div>
+                  <div className={`mb-4 ${selectedQuestion?.id === question.id ? 'text-indigo-100' : 'text-gray-300'}`}>
+                    {question.question}
+                  </div>
+                  <ul className="space-y-2">
                     {question.options.map((option, index) => (
                       <li key={index}>
-                        <div className="text-left w-full p-2 bg-[#2A2A2A] rounded text-white">
+                        <div className={`text-left w-full p-2 rounded text-white ${
+                          selectedQuestion?.id === question.id 
+                            ? 'bg-indigo-800/60 border border-indigo-500/40' 
+                            : 'bg-[#2A2A2A]'
+                        }`}>
                           {option}
                         </div>
                       </li>

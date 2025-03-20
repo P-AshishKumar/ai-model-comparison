@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react'
+import MainNavbar from "@/components/MainNavbar" // Import MainNavbar
 
 // Define props interface
 interface Screen2Props {
@@ -61,32 +62,25 @@ const Screen2 = ({
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950">
-            {/* Header */}
-            <header className="border-b border-gray-800/50 py-4 backdrop-blur-sm bg-black/20 sticky top-0 z-10">
-                <div className="container mx-auto flex items-center px-4">
-                    <div className="w-24">
-                        <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-gray-400 hover:text-white">
-                            <ArrowLeft className="mr-1 h-4 w-4" />
-                            Back
-                        </Button>
-                    </div>
-                    <div className="flex-1 flex items-center justify-center text-white font-semibold text-lg">
-                        <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mr-3">
-                            <span className="text-white font-bold">AI</span>
-                        </div>
-                        <span className="text-gray-400">AI-CCORE</span>
-                        <span className="mx-2 text-gray-600">|</span>
-                        <span className="text-white">Week 1: AI Model Comparison</span>
-                    </div>
-                    <div className="w-24"></div>
-                </div>
-            </header>
+            {/* Replace the header with MainNavbar */}
+            <MainNavbar 
+                // title="Week 1"
+                // subtitle="AI Model Comparison"
+                backUrl="/"
+                backLabel="Back"
+                onBack={() => router.push('/')}
+                // rightContent={
+                //     <div className="flex items-center gap-2">
+                //         <span className="text-sm text-gray-400">AI-CCORE</span>
+                //     </div>
+                // }
+            />
 
             {/* Main content */}
             <main className="flex-grow container mx-auto py-12 px-4">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
-                        Week 1: <span className="text-indigo-400">Exercises</span>
+                        Week 1 <span className="text-indigo-400">Exercises</span>
                     </h1>
                     <p className="text-xl text-gray-300 max-w-2xl mx-auto">
                         Complete the following exercises to learn about AI model comparison
@@ -118,7 +112,7 @@ const Screen2 = ({
                             </CardDescription>
                         </CardHeader>
                         <CardContent className={isExerciseActive("exercise1") ? "text-gray-200" : "text-gray-300"}>
-                            <p>Compare responses from GPT-4o, Claude, and Gemini models on the same prompts to analyze performance differences.</p>
+                            <p>Compare responses from leading LLMs on the same prompts to analyze performance differences.</p>
                         </CardContent>
                         <CardFooter>
                             <Button
@@ -151,7 +145,7 @@ const Screen2 = ({
                                     </span>
                                 )}
                             </div>
-                            <CardDescription className="text-gray-400">Prompt Engineering</CardDescription>
+                            <CardDescription className="text-gray-400">Prompt Techniques</CardDescription>
                         </CardHeader>
                         <CardContent className="text-gray-300">
                             <p>Experiment with different prompt engineering techniques to see how they affect LLM responses to the same queries.</p>
@@ -194,11 +188,11 @@ const Screen2 = ({
                                 )}
                             </div>
                             <CardDescription className={isExerciseActive("exercise3") ? "text-indigo-200" : "text-gray-400"}>
-                                Model Parameters
+                                Prompt Engineering 
                             </CardDescription>
                         </CardHeader>
                         <CardContent className={isExerciseActive("exercise3") ? "text-gray-200" : "text-gray-300"}>
-                            <p>Experiment with different model parameters like temperature and max tokens to see their effects on outputs.</p>
+                            <p>Design a prompt for a specific use case using various prompting techniques and analyze their impact on the generated outputs.</p>
                         </CardContent>
                         <CardFooter>
                             <Button
@@ -222,15 +216,18 @@ const Screen2 = ({
                         : "bg-gray-900/80 border-gray-800/50"} 
                         border transition-all duration-300 hover:scale-105 backdrop-blur-sm relative`}
                     >
-                        {completedExercises.includes("exercise4") && (
-                            <div className="absolute top-2 right-2 bg-green-500 rounded-full p-0.5">
-                                <CheckCircle className="h-5 w-5 text-white" />
-                            </div>
-                        )}
                         <CardHeader>
-                            <CardTitle className={`text-2xl ${isExerciseActive("exercise4") ? "text-white" : "text-gray-200"}`}>
-                                Exercise 4
-                            </CardTitle>
+                            <div className="flex justify-between items-center">
+                                <CardTitle className={`text-2xl ${isExerciseActive("exercise4") ? "text-white" : "text-gray-200"}`}>
+                                    Exercise 4
+                                </CardTitle>
+                                {completedExercises.includes("exercise4") && (
+                                    <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full flex items-center">
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        Completed
+                                    </span>
+                                )}
+                            </div>
                             <CardDescription className={isExerciseActive("exercise4") ? "text-indigo-200" : "text-gray-400"}>
                                 Results Interpretation
                             </CardDescription>
