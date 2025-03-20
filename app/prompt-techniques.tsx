@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, ArrowRight, CheckCircle, Upload } from "lucide-react"
 import Image from 'next/image'
@@ -33,16 +33,29 @@ const PROMPT_TECHNIQUES = [
   },
 ]
 
-export default function Exercise2Page() {
+// Add this interface at the top
+interface Exercise2PageProps {
+  initialFileName?: string | null
+}
+
+export default function Exercise2Page({ initialFileName = null }: Exercise2PageProps) {
   const router = useRouter()
   const [step, setStep] = useState(1) // 1: Upload, 2: Choose Scenario, 3: Choose Prompts
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null)
   const [selectedQuestion, setSelectedQuestion] = useState<{id: number, title: string, question: string} | null>(null)
   const [responses, setResponses] = useState<{ [key: string]: string | null }>({})
   const [isGenerating, setIsGenerating] = useState(false)
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(initialFileName)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
+  // Load the file and move to step 2 if a file is already provided
+  useEffect(() => {
+    if (initialFileName) {
+      setUploadedFileName(initialFileName)
+      setStep(2) // Skip to scenario selection
+    }
+  }, [initialFileName])
+
   // Function to mark exercise as complete
   const markExerciseComplete = (exerciseId: string) => {
     try {
@@ -63,6 +76,8 @@ export default function Exercise2Page() {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFileName(file.name);
+      // Store the uploaded document name in localStorage for future exercises
+      localStorage.setItem('uploadedDocumentName', file.name);
       // Move to next step after file is uploaded
       setStep(2);
     }
@@ -345,6 +360,8 @@ export default function Exercise2Page() {
               height={24}
               className="mr-2"
             />
+            <span className="text-gray-400">AI-CCORE</span>
+            <span className="mx-2 text-gray-600">|</span>
             <span className="text-gray-400">Exercise 2:</span>
             <span className="ml-2">Prompt Engineering</span>
           </div>
@@ -385,11 +402,40 @@ export default function Exercise2Page() {
             </div>
           </div>
           
-          <div className="w-24 text-right">
-            <Button variant="ghost" size="sm" onClick={() => router.push('/week1')} className="text-gray-400 hover:text-white">
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => router.push('/week1')} 
+              className="text-gray-400 hover:text-white"
+            >
               <ArrowLeft className="mr-1 h-4 w-4" />
               Back
             </Button>
+            
+            {step > 1 && (
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  // Only enable the Next button when appropriate conditions are met
+                  if ((step === 2 && selectedQuestion) || (step === 3 && Object.keys(responses).length > 0)) {
+                    if (step === 3) {
+                      // Mark exercise as complete and go to next exercise
+                      markExerciseComplete("exercise2");
+                      router.push('/week1');
+                    } else {
+                      // Move to the next step within this exercise
+                      setStep(step + 1);
+                    }
+                  }
+                }}
+                disabled={(step === 2 && !selectedQuestion) || (step === 3 && Object.keys(responses).length === 0)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                {step === 3 ? 'Complete Exercise' : 'Next Step'}
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </header>

@@ -49,10 +49,10 @@ const Screen1 = () => {
           <Card className="bg-gradient-to-br from-indigo-900/80 to-blue-900/80 border border-indigo-500/50 shadow-lg hover:shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all duration-300 hover:scale-105 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-2xl text-white">Week 1</CardTitle>
-              <CardDescription className="text-indigo-200">AI Model Comparison</CardDescription>
+              <CardDescription className="text-indigo-200">LLM Models Comparison</CardDescription>
             </CardHeader>
             <CardContent className="text-gray-200">
-              <p>Compare responses from leading LLMs including GPT-4o, Claude, and Gemini. Analyze performance across different prompting techniques.</p>
+              <p>Compare responses from leading LLMs for different Scenerios</p>
             </CardContent>
             <CardFooter>
               <Button 
@@ -71,7 +71,7 @@ const Screen1 = () => {
               <CardDescription className="text-gray-400">Prompt Engineering</CardDescription>
             </CardHeader>
             <CardContent className="text-gray-300">
-              <p>Learn advanced prompt engineering techniques to get the most effective results from different AI models.</p>
+              <p>Learn prompt techniques to get the most effective results from different LLM models.</p>
             </CardContent>
             <CardFooter>
               <Button 
@@ -109,7 +109,7 @@ const Screen1 = () => {
               <CardDescription className="text-gray-400">Fine-tuning & Evaluation</CardDescription>
             </CardHeader>
             <CardContent className="text-gray-300">
-              <p>Learn techniques for customizing foundation models and properly evaluating AI model performance.</p>
+              <p>Learn techniques for customizing foundation models and properly evaluating LLM model performance.</p>
             </CardContent>
             <CardFooter>
               <Button 
@@ -126,7 +126,7 @@ const Screen1 = () => {
       {/* Footer */}
       <footer className="border-t border-gray-800/50 py-6 mt-auto backdrop-blur-sm bg-black/20">
         <div className="container mx-auto text-center text-gray-500 text-sm">
-          <p>© 2024 AI-CCORE Bootcamp Labs. All rights reserved.</p>
+          <p>© 2025 AI-CCORE Bootcamp Labs. All rights reserved.</p>
         </div>
       </footer>
     </div>

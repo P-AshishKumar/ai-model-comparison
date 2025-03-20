@@ -8,9 +8,14 @@ import { ChevronDown } from "lucide-react"
 interface ModelSelectorProps {
   selectedModels: string[]
   onModelChange: (models: string[]) => void
+  onOpenChange?: (open: boolean) => void
 }
 
-const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModels = [], onModelChange }) => {
+const ModelSelector: React.FC<ModelSelectorProps> = ({ 
+  selectedModels = [], 
+  onModelChange,
+  onOpenChange 
+}) => {
   // Display label based on selection count
   const getButtonLabel = () => {
     if (selectedModels.length === 0) return "Select LLM models";
@@ -18,7 +23,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModels = [], onMo
     return `${selectedModels.length} models selected`;
   }
 
-  // Old model selection logic merged with new UI structure
+  // Model selection logic
   const handleModelChange = (model: string, checked: boolean) => {
     if (checked) {
       if (selectedModels.length < 3) onModelChange([...selectedModels, model]);
@@ -28,37 +33,53 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({ selectedModels = [], onMo
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-48 h-10 bg-gradient-to-r from-[#1A1A1A] to-[#111] border border-indigo-900/30 text-sm text-white justify-between hover:border-indigo-500/50 transition-all duration-300">
+        <Button variant="outline" className="w-56 h-10 bg-gradient-to-r from-[#1A1A1A] to-[#111] border border-indigo-900/30 text-sm text-white justify-between hover:border-indigo-500/50 transition-all duration-300">
           {getButtonLabel()}
           <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-[#1A1A1A] border border-[#333333] text-white">
-        <div className="p-2 text-sm text-gray-400 font-semibold">OpenAI</div>
-        <DropdownMenuCheckboxItem
-          checked={selectedModels.includes("gpt-4o")}
-          onCheckedChange={(checked) => handleModelChange("gpt-4o", checked)}
-        >
-          GPT-4o
-        </DropdownMenuCheckboxItem>
-
-        <div className="p-2 text-sm text-gray-400 font-semibold">Anthropic</div>
-        <DropdownMenuCheckboxItem
-          checked={selectedModels.includes("claude-3-7-sonnet-20250219")}
-          onCheckedChange={(checked) => handleModelChange("claude-3-7-sonnet-20250219", checked)}
-        >
-          Claude 3-7-sonnet
-        </DropdownMenuCheckboxItem>
-
-        <div className="p-2 text-sm text-gray-400 font-semibold">Google</div>
-        <DropdownMenuCheckboxItem
-          checked={selectedModels.includes("gemini-2.0-flash")}
-          onCheckedChange={(checked) => handleModelChange("gemini-2.0-flash", checked)}
-        >
-          Gemini 2.0-flash
-        </DropdownMenuCheckboxItem>
+      <DropdownMenuContent 
+        align="start" 
+        sideOffset={4}
+        className="bg-[#1A1A1A] border border-[#333333] text-white z-[60] w-56"
+      >
+        {/* Vertical layout structure */}
+        <div className="p-2 flex flex-col gap-4">
+          <div>
+            <div className="text-sm text-gray-400 font-semibold mb-2">OpenAI</div>
+            <DropdownMenuCheckboxItem
+              checked={selectedModels.includes("gpt-4o")}
+              onCheckedChange={(checked) => handleModelChange("gpt-4o", checked)}
+              className="mb-1"
+            >
+              GPT-4o
+            </DropdownMenuCheckboxItem>
+          </div>
+          
+          <div>
+            <div className="text-sm text-gray-400 font-semibold mb-2">Anthropic</div>
+            <DropdownMenuCheckboxItem
+              checked={selectedModels.includes("claude-3-7-sonnet-20250219")}
+              onCheckedChange={(checked) => handleModelChange("claude-3-7-sonnet-20250219", checked)}
+              className="mb-1"
+            >
+              Claude 3.7 Sonnet
+            </DropdownMenuCheckboxItem>
+          </div>
+          
+          <div>
+            <div className="text-sm text-gray-400 font-semibold mb-2">Google</div>
+            <DropdownMenuCheckboxItem
+              checked={selectedModels.includes("gemini-2.0-flash")}
+              onCheckedChange={(checked) => handleModelChange("gemini-2.0-flash", checked)}
+              className="mb-1"
+            >
+              Gemini 2.0-flash
+            </DropdownMenuCheckboxItem>
+          </div>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   )

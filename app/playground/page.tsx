@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeftRight, Eraser, ArrowLeft, CheckCircle } from "lucide-react"
 import ChatInput from "@/components/chat-input"
-import ModelPanel from "@/components/model-panel"
+import { ModelPanel, ModelPanelHeader } from "@/components/model-panel"
 import SinglePanelView from "@/components/single-panel-view"
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -137,6 +137,9 @@ export default function PlaygroundPage() {
 
     try {
       const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${questionWithOptions}`
+      
+      // Get the uploaded document name from localStorage
+      const uploadedDocument = localStorage.getItem('uploadedDocumentName') || "Mobile-Device-Policy.pdf";
 
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
@@ -146,7 +149,7 @@ export default function PlaygroundPage() {
           body: JSON.stringify({
             prompt: conversationHistory,
             model,
-            filePath: "Mobile-Device-Policy.pdf",
+            filePath: uploadedDocument, // Use the uploaded document
             systemMessage: "Provide the correct option from A, B, C, D. give clear and concise answer"
           }),
         });
@@ -182,54 +185,7 @@ export default function PlaygroundPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
-      <header className="flex items-center justify-between px-4 h-14 border-b border-gray-800/50 backdrop-blur-sm bg-black/20 shrink-0">
-        <div className="w-24">
-          <Button variant="ghost" size="sm" onClick={() => router.push('/week1')} className="text-gray-400 hover:text-white">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Exercises
-          </Button>
-        </div>
-
-        <div className="flex items-center text-white font-semibold text-lg">
-          <Image
-            src={aiCcoreLogo}
-            alt="AI-CCORE Logo"
-            width={24}
-            height={24}
-            className="mr-2"
-          />
-          <span className="text-gray-400">AI-CCORE</span>
-          <span className="mx-0.5 text-gray-600"></span>
-          <span>Playground</span>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" onClick={handleCompareClick} className="text-gray-400 hover:text-white" disabled={selectedModels.length < 2}>
-            <ArrowLeftRight className="mr-2 h-4 w-4" />
-            Compare Models
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white"
-            onClick={handleClearChat}
-          >
-            <Eraser className="mr-2 h-4 w-4" />
-            Clear
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white"
-            onClick={() => setCurrentView('prompt-techniques')} // Switch to PromptTechniques view
-          >
-            Prompt Techniques
-          </Button>
-        </div>
-      </header>
-
-      {/* Main content area */}
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950">
       <div className="flex-1 flex flex-col overflow-hidden">
         {currentView === 'playground' ? (
           compareCount === COMPARE_SINGLE ? (
@@ -243,61 +199,77 @@ export default function PlaygroundPage() {
               selectedQuestion={selectedQuestion}
               setSelectedModels={setSelectedModels}  // Pass function to allow model selection
               selectedModels={selectedModels}  // Pass selected models
+              onCompareClick={() => {
+                if (selectedModels.length >= 2 && selectedQuestion) {
+                  setCompareCount(selectedModels.length === 2 ? COMPARE_DOUBLE : COMPARE_TRIPLE);
+                  compareQuestionSelect(selectedQuestion);
+                }
+              }}
             />
           ) : (
-            <div className={`grid ${compareCount === COMPARE_DOUBLE ? "grid-cols-2" : "grid-cols-3"} gap-0 h-[calc(100vh-180px)] overflow-hidden`}>
-              {selectedModels.includes('gpt-4o') && (
-                <ModelPanel
-                  className="overflow-auto border-r border-gray-800/50"
-                  response={responses.A}
-                  isGenerating={isGenerating}
-                  prompt={prompt}
-                  showResponseArea={true}
-                  selectedModel="gpt-4o"
-                  messages={messages.filter((m) => m.panelId === 'A')}
-                />
-              )}
-              {selectedModels.includes('claude-3-7-sonnet-20250219') && (
-                <ModelPanel
-                  className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
-                  response={responses.B}
-                  isGenerating={isGenerating}
-                  showResponseArea={true}
-                  prompt={prompt}
-                  selectedModel="claude-3-7-sonnet-20250219"
-                  messages={messages.filter((m) => m.panelId === 'B')}
-                />
-              )}
-              {selectedModels.includes('gemini-2.0-flash') && (
-                <ModelPanel
-                  className="overflow-auto"
-                  response={responses.C}
-                  isGenerating={isGenerating}
-                  showResponseArea={true}
-                  prompt={prompt}
-                  selectedModel="gemini-2.0-flash"
-                  messages={messages.filter((m) => m.panelId === 'C')}
-                />
-              )}
-            </div>
+            <>
+              <div className="h-svh flex flex-col">
+                <ModelPanelHeader>
+                  <div className={`grid ${compareCount === COMPARE_DOUBLE ? "grid-cols-2" : "grid-cols-3"} gap-0 h-[calc(100vh-220px)] overflow-hidden`}>
+                    {selectedModels.includes('gpt-4o') && (
+                      <ModelPanel
+                        className="overflow-auto border-r border-gray-800/50"
+                        response={responses.A}
+                        isGenerating={isGenerating}
+                        prompt={prompt}
+                        showResponseArea={true}
+                        selectedModel="gpt-4o"
+                        messages={messages.filter((m) => m.panelId === 'A')}
+                        isLastPanel={compareCount === COMPARE_DOUBLE && !selectedModels.includes('claude-3-7-sonnet-20250219')}
+                      />
+                    )}
+                    {selectedModels.includes('claude-3-7-sonnet-20250219') && (
+                      <ModelPanel
+                        className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
+                        response={responses.B}
+                        isGenerating={isGenerating}
+                        showResponseArea={true}
+                        prompt={prompt}
+                        selectedModel="claude-3-7-sonnet-20250219"
+                        messages={messages.filter((m) => m.panelId === 'B')}
+                      />
+                    )}
+                    {selectedModels.includes('gemini-2.0-flash') && (
+                      <ModelPanel
+                        className="overflow-auto"
+                        response={responses.C}
+                        isGenerating={isGenerating}
+                        showResponseArea={true}
+                        prompt={prompt}
+                        selectedModel="gemini-2.0-flash"
+                        messages={messages.filter((m) => m.panelId === 'C')}
+                      />
+                    )}
+                  </div>
+                </ModelPanelHeader>
+              </div>
+              
+              {/* Add this before the chat input but only when in compare mode */}
+              <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm flex justify-end">
+                <Button 
+                  onClick={() => {
+                    markExerciseComplete("exercise1");
+                    router.push('/week1'); // Go back to exercises page
+                  }}
+                  className="bg-blue-900 hover:bg-blue-800 border border-blue-700/30 shadow-sm hover:shadow-[0_0_10px_rgba(30,64,175,0.4)] transition-all duration-300 text-white flex items-center gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Complete Exercise
+                </Button>
+              </div>
+            </>
           )
         ) : (
           <PromptTechniques />
         )}
       </div>
-      {/* Add this before the chat input or at the bottom of the main content */}
-      <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm flex justify-end">
-        <Button 
-          onClick={() => {
-            markExerciseComplete("exercise1");
-            router.push('/week1'); // Go back to exercises page
-          }}
-          className="bg-blue-900 hover:bg-blue-800 border border-blue-700/30 shadow-sm hover:shadow-[0_0_10px_rgba(30,64,175,0.4)] transition-all duration-300 text-white flex items-center gap-2"   >
-          <CheckCircle className="h-4 w-4" />
-          Complete Exercise
-        </Button>
-      </div>
-      {/* Chat input - only shown in compare mode, placed outside of the panel view */}
+      
+      {/* Chat input at the bottom */}
       {compareCount > COMPARE_SINGLE && (
         <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
           <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
