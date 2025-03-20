@@ -1,11 +1,18 @@
 import fs from "fs";
 import { OpenAI } from "openai";
 import path from 'path';
-// Initialize OpenAI client
-const client = new OpenAI();
+
+// Initialize OpenAI client with API key from environment variable
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function POST(req: Request) {
   try {
+    // Log that we're using the API key (don't log the full key!)
+    console.log("Using OpenAI API key starting with:", 
+      process.env.OPENAI_API_KEY );
+
     const { prompt, model, filePath, temperature = 0.9, max_tokens = 500, systemMessage } = await req.json();
     console.log("Received model:", model);
     console.log("Received temperature:", temperature);
@@ -22,7 +29,7 @@ export async function POST(req: Request) {
 
     // If filePath is provided, read the file
     if (filePath) {
-      const absolutePath = path.join(process.cwd(), 'public', filePath);
+      const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
       const fileBuffer = fs.createReadStream(absolutePath);
 
       // Upload file to OpenAI

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeftRight, Eraser, ArrowLeft } from "lucide-react"
+import { ArrowLeftRight, Eraser, ArrowLeft, CheckCircle } from "lucide-react"
 import ChatInput from "@/components/chat-input"
 import ModelPanel from "@/components/model-panel"
 import SinglePanelView from "@/components/single-panel-view"
@@ -37,11 +37,19 @@ export default function PlaygroundPage() {
   })
   const [selectedQuestion, setSelectedQuestion] = useState<{ title: string, question: string, options: string[] } | null>(null)
   const [selectedModels, setSelectedModels] = useState<string[]>([])
-  const [isGeneratingPanels, setIsGeneratingPanels] = useState<{ [key: string]: boolean }>({
-    A: false,
-    B: false,
-    C: false,
-  });
+
+  // Add the markExerciseComplete function here
+  const markExerciseComplete = (exerciseId: string) => {
+    // Get current completed exercises
+    const storedCompletedExercises = localStorage.getItem('completedExercises') || '[]';
+    const completedExercises = JSON.parse(storedCompletedExercises);
+
+    // Add the current exercise if not already included
+    if (!completedExercises.includes(exerciseId)) {
+      completedExercises.push(exerciseId);
+      localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+    }
+  };
 
   const modelToEndpointMapping: { [key: string]: string } = {
     "gpt-4o": "openai",
@@ -50,79 +58,58 @@ export default function PlaygroundPage() {
   };
 
   const [currentView, setCurrentView] = useState('playground')
-
   // Function to handle the message submission
   const handleSubmit = async (input: string) => {
-    if (!input) return;
-    setPrompt(input);
-    setIsGenerating(true);
+    if (!input) return
+    setPrompt(input)
+    setIsGenerating(true)
 
     const userMessage: Message = {
       role: 'user',
-      content: input,
-    };
-    setMessages((prev) => [...prev, userMessage]);
+      content: input
+    }
+    setMessages(prev => [...prev, userMessage])
 
     try {
-      const conversationHistory = messages.map((msg) => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${input}`;
+      const panelsToGenerate = compareCount === COMPARE_SINGLE ? 1 : compareCount === COMPARE_DOUBLE ? 2 : 3
+
+      const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${input}`
 
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
-        const startTime = performance.now();
-        const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
-        setIsGeneratingPanels(prev => ({ ...prev, [panelId]: true }));
         return fetch(`/api/generate/${endpoint}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             prompt: conversationHistory,
             model,
           }),
-        }).then(response => {
-          const endTime = performance.now();
-          return response.json().then(data => ({
-            model,
-            text: data.text,
-            responseTime: endTime - startTime,
-          }));
-        }).catch(error => {
-          if (error.name === 'AbortError') {
-            console.log(`Request for ${model} aborted due to timeout`);
-            return null;
-          }
-          throw error;
         });
       });
 
-      fetchPromises.forEach(async (fetchPromise, index) => {
-        try {
-          const result = await fetchPromise;
-          if (result) {
-            const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+      const results = await Promise.all(fetchPromises)
+      const dataPromises = results.map((res) => res.json())
+      const data = await Promise.all(dataPromises)
 
-            setResponses(prevResponses => ({
-              ...prevResponses,
-              [panelId]: result.text,
-            }));
+      const newResponses = { ...responses }
+      if (panelsToGenerate >= 1) {
+        newResponses.A = data[0].text
+        setMessages(prev => [...prev, { role: 'assistant', content: data[0].text, panelId: 'A' }])
+      }
+      if (panelsToGenerate >= 2) {
+        newResponses.B = data[1].text
+        setMessages(prev => [...prev, { role: 'assistant', content: data[1].text, panelId: 'B' }])
+      }
+      if (panelsToGenerate >= 3) {
+        newResponses.C = data[2].text
+        setMessages(prev => [...prev, { role: 'assistant', content: data[2].text, panelId: 'C' }])
+      }
 
-            setMessages(prevMessages => [
-              ...prevMessages,
-              { role: 'assistant', content: result.text, panelId },
-            ]);
-
-            console.log(`Response for ${panelId} received in ${result.responseTime.toFixed(2)} ms`);
-          }
-        } catch (error) {
-          console.error(`Error generating response for model ${selectedModels[index]}:`, error);
-        } finally {
-          const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
-          setIsGeneratingPanels(prev => ({ ...prev, [panelId]: false }));
-        }
-      });
+      setResponses(newResponses)
     } catch (error) {
-      console.error('Error generating responses:', error);
+      console.error("Error generating responses:", error)
     } finally {
-      setIsGenerating(false);
+      setIsGenerating(false)
     }
   }
 
@@ -141,7 +128,7 @@ export default function PlaygroundPage() {
     }
   }
 
-  const compareQuestionSelect = async (question: { title: string, question: string, options: string[] }) => {
+    const compareQuestionSelect = async (question: { title: string, question: string, options: string[] }) => {
     const questionWithOptions = `${question.question}\nOptions:\n${question.options.join('\n')}`;
 
     // Update the prompt state with the question and options
@@ -241,31 +228,29 @@ export default function PlaygroundPage() {
     <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
       <header className="flex items-center justify-between px-4 h-14 border-b border-gray-800/50 backdrop-blur-sm bg-black/20 shrink-0">
         <div className="w-24">
-          <Button variant="ghost" size="sm" onClick={() => router.push('/')} className="text-gray-400 hover:text-white">
+          <Button variant="ghost" size="sm" onClick={() => router.push('/week1')} className="text-gray-400 hover:text-white">
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Back
+            Back to Exercises
           </Button>
         </div>
 
-        <div className="flex items-center text-white font-semibold text-lg">
-          <Image
-            src={aiCcoreLogo}
-            alt="AI-CCORE Logo"
-            width={24}
-            height={24}
-            className="mr-2"
-          />
-          <span className="text-gray-400">AI-CCORE</span>
-          <span className="mx-0.5 text-gray-600"></span>
-          <span>Playground</span>
-        </div>
-
+          <div className="flex-1 flex justify-center items-center text-white font-semibold text-lg">
+    <div className="flex items-center">
+      <Image
+        src={aiCcoreLogo}
+        alt="AI-CCORE Logo"
+        width={120}
+        height={115}
+      />
+      {/* <span>Playground</span> */}
+    </div>
+  </div>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="sm" onClick={handleCompareClick} className="text-gray-400 hover:text-white" disabled={selectedModels.length < 2}>
             <ArrowLeftRight className="mr-2 h-4 w-4" />
             Compare Models
           </Button>
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             className="text-gray-400 hover:text-white"
@@ -273,15 +258,15 @@ export default function PlaygroundPage() {
           >
             <Eraser className="mr-2 h-4 w-4" />
             Clear
-          </Button>
-          <Button
+          </Button> */}
+          {/* <Button
             variant="ghost"
             size="sm"
             className="text-gray-400 hover:text-white"
             onClick={() => setCurrentView('prompt-techniques')} // Switch to PromptTechniques view
           >
             Prompt Techniques
-          </Button>
+          </Button> */}
         </div>
       </header>
 
@@ -306,7 +291,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className="overflow-auto border-r border-gray-800/50"
                   response={responses.A}
-                  isGenerating={isGeneratingPanels.A}
+                  isGenerating={isGenerating}
                   prompt={prompt}
                   showResponseArea={true}
                   selectedModel="gpt-4o"
@@ -317,7 +302,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
                   response={responses.B}
-                  isGenerating={isGeneratingPanels.B}
+                  isGenerating={isGenerating}
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="claude-3-7-sonnet-20250219"
@@ -328,7 +313,7 @@ export default function PlaygroundPage() {
                 <ModelPanel
                   className="overflow-auto"
                   response={responses.C}
-                  isGenerating={isGeneratingPanels.C}
+                  isGenerating={isGenerating}
                   showResponseArea={true}
                   prompt={prompt}
                   selectedModel="gemini-2.0-flash"
@@ -341,12 +326,24 @@ export default function PlaygroundPage() {
           <PromptTechniques />
         )}
       </div>
+      {/* Add this before the chat input or at the bottom of the main content */}
+      <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm flex justify-end">
+        <Button
+          onClick={() => {
+            markExerciseComplete("exercise1");
+            router.push('/week1'); // Go back to exercises page
+          }}
+          className="bg-blue-900 hover:bg-blue-800 border border-blue-700/30 shadow-sm hover:shadow-[0_0_10px_rgba(30,64,175,0.4)] transition-all duration-300 text-white flex items-center gap-2"   >
+          <CheckCircle className="h-4 w-4" />
+          Complete Exercise
+        </Button>
+      </div>
       {/* Chat input - only shown in compare mode, placed outside of the panel view */}
-      {/* {compareCount > COMPARE_SINGLE && (
+      {compareCount > COMPARE_SINGLE && (
         <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
           <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
         </div>
-      )} */}
+      )}
     </div>
   )
 }
