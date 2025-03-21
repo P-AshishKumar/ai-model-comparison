@@ -150,3 +150,12 @@
 .single-panel-view .right-panel .input-container .input-wrapper .buttons .submit-button:disabled {
   opacity: 0.5;
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

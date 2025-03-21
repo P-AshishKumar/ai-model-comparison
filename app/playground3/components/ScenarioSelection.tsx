@@ -16,6 +16,9 @@ interface ScenarioSelectionProps {
 export default function ScenarioSelection({ scenarioData, onSelect }: ScenarioSelectionProps) {
     return (
         <div className="container mx-auto px-4 h-full flex flex-col justify-center max-w-5xl">
+            <div className="text-center mb-6  mt-5">
+                <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 3 <span className="text-indigo-400">Design Prompt</span></h2>
+            </div>
             <div className="text-center mb-12 mt-16">
                 <h1 className="text-4xl font-bold mb-3">
                     <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-blue-200">

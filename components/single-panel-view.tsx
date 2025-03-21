@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Sliders, X } from "lucide-react"
+import { Sliders, X, File } from "lucide-react" // Add File icon import
 import ModelSelector from "@/components/model-selector"
 import { questions } from "@/components/questions"
 import { Tooltip as ReactTooltip } from "react-tooltip"
@@ -22,6 +22,9 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
   const [showFilterModal, setShowFilterModal] = useState(false)
   const filterButtonRef = useRef<HTMLButtonElement>(null)
 
+  // Add state for document preview
+  const [showDocumentPreview, setShowDocumentPreview] = useState(false)
+
   // Remove a model from the selected models
   const handleModelRemove = (model: string) => {
     setSelectedModels(selectedModels.filter((m) => m !== model))
@@ -32,14 +35,67 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
     onQuestionSelect(question)
   }
 
+  // Toggle document preview modal
+  const toggleDocumentPreview = () => {
+    setShowDocumentPreview(!showDocumentPreview)
+  }
+
+  // Get the document filename based on selected question
+  const getDocumentFilename = () => {
+    // Default to first document
+    return "Mobile-Device-Policy.pdf"
+  }
+
+  // Document Preview Modal Component
+  const DocumentPreviewModal = () => {
+    if (!showDocumentPreview) return null
+
+    return (
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div className="bg-gray-900 rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-gray-800">
+            <h2 className="text-xl font-medium text-white flex items-center">
+              <File className="mr-2 h-5 w-5" /> {getDocumentFilename()}
+            </h2>
+            <Button onClick={toggleDocumentPreview} variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <iframe
+              src={`/${getDocumentFilename()}#view=FitH`}
+              className="w-full h-full"
+              title="Document Preview"
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="single-panel-view flex h-full">
       {/* Left side - Questions and configuration */}
       <div className="w-full flex flex-col p-4">
-        {/* Add exercise title in header */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 1 <span className="text-indigo-400">Compare LLM Models</span></h2>
+        {/* Header with exercise title and view document button */}
+        <div className="flex justify-center items-center mb-6 relative">
+          <h2 className="text-xl md:text-2xl font-semibold text-white text-center">
+            Exercise 1 <span className="text-indigo-400">Compare LLM Models</span>
+          </h2>
+
+          {/* View Document button positioned absolutely to the right of the title */}
+          <div className="absolute right-10">
+            <Button
+              onClick={toggleDocumentPreview}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 flex items-center gap-2"
+              aria-label="View Document"
+            >
+              <File className="h-4 w-4" />
+              <span>View Document</span>
+            </Button>
+          </div>
         </div>
+
         <div className="header mb-4 flex items-center space-x-2">
           <ModelSelector selectedModels={selectedModels} onModelChange={setSelectedModels} />
           <Button
@@ -64,7 +120,7 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
           ))}
         </div>
 
-        <div className="content flex-1 overflow-auto">
+        <div className="content flex-1 overflow-auto hide-scrollbar">
           {/* Questions */}
           <div className="questions">
             <div className="text-sm text-gray-400 mb-2 text-center">Select a Scenario</div>
@@ -72,11 +128,10 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
               {questions.map((question) => (
                 <div
                   key={question.id}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all duration-300 ${
-                    selectedQuestion?.id === question.id
-                      ? 'border-indigo-500 bg-gradient-to-br from-indigo-900/80 to-blue-900/80 shadow-[0_0_20px_rgba(99,102,241,0.5)] transform scale-[1.02]'
-                      : 'border-gray-700 bg-gradient-to-r from-gray-900 to-gray-800 hover:border-blue-500/50 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                  }`}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all duration-300 ${selectedQuestion?.id === question.id
+                    ? 'border-indigo-500 bg-gradient-to-br from-indigo-900/80 to-blue-900/80 shadow-[0_0_20px_rgba(99,102,241,0.5)] transform scale-[1.02]'
+                    : 'border-gray-700 bg-gradient-to-r from-gray-900 to-gray-800 hover:border-blue-500/50 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                    }`}
                   onClick={() => handleQuestionSelect(question)}
                 >
                   {/* Add a visual indicator for selected question */}
@@ -90,7 +145,7 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
                       </span>
                     </div>
                   )}
-                  
+
                   <div className={`text-xl font-semibold mb-3 ${selectedQuestion?.id === question.id ? 'text-white' : 'text-white'}`}>
                     {question.title}
                   </div>
@@ -100,11 +155,10 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
                   <ul className="space-y-2">
                     {question.options.map((option, index) => (
                       <li key={index}>
-                        <div className={`text-left w-full p-2 rounded text-white ${
-                          selectedQuestion?.id === question.id 
-                            ? 'bg-indigo-800/60 border border-indigo-500/40' 
-                            : 'bg-[#2A2A2A]'
-                        }`}>
+                        <div className={`text-left w-full p-2 rounded text-white ${selectedQuestion?.id === question.id
+                          ? 'bg-indigo-800/60 border border-indigo-500/40'
+                          : 'bg-[#2A2A2A]'
+                          }`}>
                           {option}
                         </div>
                       </li>
@@ -157,6 +211,9 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
           </div>
         </div>
       )}
+
+      {/* Add the document preview modal */}
+      <DocumentPreviewModal />
     </div>
   )
 }

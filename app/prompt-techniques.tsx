@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, Fragment } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ArrowRight, CheckCircle, Upload } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle, Upload, File, X } from "lucide-react"
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { questions } from "@/components/prompt-question"
@@ -23,10 +23,11 @@ const AVAILABLE_MODELS = [
 
 // Add this interface at the top
 interface Exercise2PageProps {
-  initialFileName?: string | null
+  initialFileName?: string | null;
+  onScenarioChange?: (scenarioId: number) => void;
 }
 
-export default function Exercise2Page({ initialFileName = null }: Exercise2PageProps) {
+export default function Exercise2Page({ initialFileName = null, onScenarioChange }: Exercise2PageProps) {
   const router = useRouter()
   // Start from step 2 (Choose Scenario) instead of step 1 (Upload Document)
   const [step, setStep] = useState(2) // Changed initial state from 1 to 2
@@ -45,6 +46,9 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
 
   // Refs for auto-scrolling
   const responsesRef = useRef<HTMLDivElement>(null)
+
+  // Add state for document preview
+  const [showDocumentPreview, setShowDocumentPreview] = useState(false)
 
   // Get current prompt techniques based on selected question
   const getCurrentPromptTechniques = () => {
@@ -81,10 +85,33 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
     }
   };
 
+  // Add this function to get the document name based on current scenario
+  const getDocumentFilename = () => {
+    if (!selectedQuestion) return "Mobile-Device-Policy.pdf";
+
+    // Map scenario IDs to their respective PDF files
+    const scenarioDocumentMap: Record<number, string> = {
+      1: 'Mobile-Device-Policy.pdf',
+      2: 'Password-Policy.pdf'
+    }
+
+    return scenarioDocumentMap[selectedQuestion.id] || 'Mobile-Device-Policy.pdf'
+  }
+
+  // Toggle document preview visibility
+  const toggleDocumentPreview = () => {
+    setShowDocumentPreview(!showDocumentPreview)
+  }
+
   // Update the handleScenarioSelect function to reset responses
   const handleScenarioSelect = (question: { id: number, title: string, question: string, promptTechnique: any[] }) => {
     setSelectedQuestion(question);
     setSelectedScenario(question.question);
+
+    // Notify parent component about scenario change if callback exists
+    if (onScenarioChange) {
+      onScenarioChange(question.id);
+    }
 
     // Clear previous responses when selecting a new scenario
     setResponses({});
@@ -189,12 +216,12 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
       if (parts.length === 2) {
         return (
           <>
-            <div className="bg-indigo-950/40 p-3 mb-4 border border-indigo-800/40 rounded">
-              <span className="text-indigo-300 font-medium mb-1 block">Examples:</span>
+            <div className="font-black text-0.9g mb-4 block p-3 mb-4 border rounded bg-indigo-950/40">
+              {/* <span className="text-indigo-300 font-medium mb-1 block"></span> */}
               {parts[0]}
             </div>
             <div>
-              <span className="text-gray-400 font-medium mb-1 block">Question:</span>
+              {/* <span className="text-gray-400 font-medium mb-1 block">Question:</span> */}
               {parts[1]}
             </div>
           </>
@@ -210,7 +237,7 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
         return (
           <>
             <div>
-              <span className="text-gray-400 font-medium mb-1 block">Question:</span>
+              {/* <span className="text-gray-400 font-medium mb-1 block">Question:</span> */}
               {question}
             </div>
             <div className="bg-indigo-950/40 p-3 my-4 border border-indigo-800/40 rounded">
@@ -303,7 +330,7 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
     switch (step) {
       case 2: // Choose Scenario
         return (
-          <div className="flex flex-col max-w-5xl mx-auto px-4">
+          <div className="flex flex-col max-w-7xl mx-auto px-4">
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Choose a Scenario</h2>
               <p className="text-gray-400">
@@ -311,21 +338,21 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-9">
               {questions.map((question) => (
                 <div
                   key={question.id}
                   className={`p-6 rounded-lg shadow-lg cursor-pointer transition-all duration-300 hover:scale-105 relative ${selectedQuestion?.id === question.id
-                      ? 'bg-gradient-to-br from-indigo-900/80 to-blue-900/80 border border-indigo-500/50 shadow-[0_0_15px_rgba(79,70,229,0.4)]'
-                      : 'bg-gray-900/80 border border-gray-800/50 hover:border-blue-500/50 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                    ? 'bg-gradient-to-br from-indigo-900/80 to-blue-900/80 border border-indigo-500/50 shadow-[0_0_15px_rgba(79,70,229,0.4)]'
+                    : 'bg-gray-900/80 border border-gray-800/50 hover:border-blue-500/50 hover:shadow-[0_0_10px_rgba(59,130,246,0.3)]'
                     }`}
                   onClick={() => handleScenarioSelect(question)}
                 >
                   {/* Add a highlight indicator for selected scenario */}
                   {selectedQuestion?.id === question.id && (
-                    <div className="absolute top-3 right-3">
-                      <span className="bg-indigo-600/40 text-indigo-300 text-xs px-2 py-1 rounded flex items-center">
-                        <CheckCircle className="h-3 w-3 mr-1" />
+                    <div className="absolute top-3 right-2">
+                      <span className="bg-green-600/40 text-green-300 text-xs px-2 py-1 rounded flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
                         Selected
                       </span>
                     </div>
@@ -347,8 +374,8 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
                         handleScenarioSelect(question);
                       }}
                       className={`${selectedQuestion?.id === question.id
-                          ? 'bg-indigo-500 hover:bg-indigo-600'
-                          : 'bg-indigo-600 hover:bg-indigo-700'
+                        ? 'bg-indigo-500 hover:bg-indigo-600'
+                        : 'bg-indigo-600 hover:bg-indigo-700'
                         } text-white`}
                     >
                       {selectedQuestion?.id === question.id ? (
@@ -422,7 +449,7 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
               </div>
 
               {/* Technique comparison results */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-9 h-[600px]">
                 {/* First Technique Card */}
                 {renderTechniqueCard(selectedQuestion?.promptTechnique[0]?.id || 'zero-shot', 0)}
 
@@ -438,11 +465,37 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
     }
   };
 
+  // Add document preview modal component
+  const DocumentPreviewModal = () => {
+    if (!showDocumentPreview) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div className="bg-gray-900 rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-gray-800">
+            <h2 className="text-xl font-medium text-white flex items-center">
+              <File className="mr-2 h-5 w-5" /> {getDocumentFilename()}
+            </h2>
+            <Button onClick={toggleDocumentPreview} variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <iframe
+              src={`/${getDocumentFilename()}#view=FitH`}
+              className="w-full h-full"
+              title="Document Preview"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
       <MainNavbar
-        // title={getNavbarTitle()}
-        // subtitle="Exercise 2: Prompt Engineering"
+        title={""}
         backUrl={step === 2 ? '/week1' : undefined}
         backLabel={getBackLabel()}
         onBack={handleBackNavigation}
@@ -462,17 +515,13 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
 
       {/* Exercise title and nav steps */}
       <div className="container mx-auto px-4 py-3 border-b border-gray-800/50">
-        <div className="flex items-center justify-between">
-          {/* Exercise title on the left */}
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-blue-200">
-              Exercise 2: Prompt Engineering
-            </h1>
+        {/* Nav steps with document preview button on the right */}
+        <div className="flex justify-between items-center">
+          {/* Left side - empty space or logo if you want */}
+          <div className="w-10"></div>
 
-          </div>
-
-          {/* Nav steps on the right */}
-          <div className="flex items-center lg:hidden">
+          {/* Center - progress steps */}
+          <div className="flex items-center">
             {navSteps.map((navStep, index) => (
               <Fragment key={navStep.number}>
                 {/* Step indicator */}
@@ -501,13 +550,27 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
                 {index < navSteps.length - 1 && (
                   <div
                     className={`w-12 h-0.5 mx-2 
-                      ${index < step - 1 ? 'bg-green-600' : 'bg-gray-700'}`}
+                      ${index < step - 2 ? 'bg-green-600' : 'bg-gray-700'}`}
                   ></div>
                 )}
               </Fragment>
             ))}
           </div>
+
+          {/* Right side - document preview button */}
+          <Button
+            onClick={toggleDocumentPreview}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
+            aria-label="Preview Document"
+          >
+            <File className="h-4 w-4" />
+            <span className="text-sm">View Document</span>
+          </Button>
         </div>
+      </div>
+
+      <div className="text-center mb-6 mt-4">
+        <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 2 <span className="text-indigo-400">Prompt Engineering</span></h2>
       </div>
 
       <div className="flex-1 overflow-auto">
@@ -515,6 +578,9 @@ export default function Exercise2Page({ initialFileName = null }: Exercise2PageP
           {renderStepContent()}
         </main>
       </div>
+
+      {/* Add the document preview modal */}
+      <DocumentPreviewModal />
 
       <footer className="border-t border-gray-800/50 py-6 backdrop-blur-sm bg-black/20">
         <div className="container mx-auto text-center text-gray-500 text-sm">
