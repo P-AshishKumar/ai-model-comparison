@@ -56,24 +56,24 @@ export async function POST(req: Request) {
 
 
     // If filePath is provided, read and encode the file
-    if (filePath) {
-      try {
-        const absolutePath = path.join(process.cwd(), 'public', filePath);
-        const fileContent = fs.readFileSync(absolutePath);
-        const fileBase64 = fileContent.toString("base64");
-        messages[0].content.push({
-          type: "document",
-          source: {
-            type: "base64",
-            media_type: "application/pdf", // Adjust MIME type if necessary
-            data: fileBase64,
-          },
-        });
-      } catch (error) {
-        console.error("❌ ERROR: Failed to read or encode file at", filePath, error);
-        return new Response(JSON.stringify({ error: "Failed to process file" }), { status: 500 });
-      }
-    }
+    // if (filePath) {
+    //   try {
+    //     const absolutePath = path.join(process.cwd(), 'public', filePath);
+    //     const fileContent = fs.readFileSync(absolutePath);
+    //     const fileBase64 = fileContent.toString("base64");
+    //     messages[0].content.push({
+    //       type: "document",
+    //       source: {
+    //         type: "base64",
+    //         media_type: "application/pdf", // Adjust MIME type if necessary
+    //         data: fileBase64,
+    //       },
+    //     });
+    //   } catch (error) {
+    //     console.error("❌ ERROR: Failed to read or encode file at", filePath, error);
+    //     return new Response(JSON.stringify({ error: "Failed to process file" }), { status: 500 });
+    //   }
+    // }
 
     // Create Anthropic client
     const anthropic = new Anthropic({ apiKey });

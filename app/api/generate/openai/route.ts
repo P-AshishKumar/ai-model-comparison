@@ -46,15 +46,15 @@ const getRandomCacheResponse = (scenarioKey) => {
 
 export async function POST(req) {
   try {
-    const { prompt, model, filePath, temperature = 0.9, max_tokens = 500, systemMessage, requestId } = await req.json();
+    const { prompt, model, document_data, temperature = 0.9, max_tokens = 500, systemMessage, requestId } = await req.json();
     console.log("Received model:", model);
     console.log("Received temperature:", temperature);
     console.log("Received max_tokens:", max_tokens);
-    console.log("Received filePath:", filePath);
+    console.log("Received document_data:", document_data);
     console.log("Received systemMessage:", systemMessage);
     console.log("Received prompt:", prompt);
 
-    console.log('Received request:', { prompt, model, filePath, temperature, max_tokens, systemMessage, requestId });
+    // console.log('Received request:', { prompt, model, filePath, temperature, max_tokens, systemMessage, requestId });
 
     // Match the prompt exactly with the predefined scenarios
     let scenarioKey = null;
@@ -77,18 +77,18 @@ export async function POST(req) {
     let result = null;
 
     // If filePath is provided, upload the file
-    if (filePath) {
-      console.log('Uploading file...');
-      const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
-      const fileBuffer = fs.createReadStream(absolutePath);
+    if (document_data) {
+      console.log('with document data...');
+      // const absolutePath = path.join(process.cwd(), 'public', 'Mobile-Device-Policy.pdf');
+      // const fileBuffer = fs.createReadStream(absolutePath);
 
-      // Upload file to OpenAI
-      const fileUploadResponse = await client.files.create({
-        file: fileBuffer,
-        purpose: "user_data", // Modify the purpose as needed
-      });
+      // // Upload file to OpenAI
+      // const fileUploadResponse = await client.files.create({
+      //   file: fileBuffer,
+      //   purpose: "user_data", // Modify the purpose as needed
+      // });
 
-      console.log("Uploaded file with ID:", fileUploadResponse.id);
+      // console.log("Uploaded file with ID:", fileUploadResponse.id);
 
       // Now make the OpenAI request
       result = await client.chat.completions.create({
@@ -99,14 +99,8 @@ export async function POST(req) {
             content: [
               {
                 type: "text",
-                text: prompt,
-              },
-              {
-                type: "file",
-                file: {
-                  file_id: fileUploadResponse.id,
-                },
-              },
+                text: document_data + prompt,
+              }
             ],
           },
           {
@@ -176,7 +170,7 @@ export async function POST(req) {
       return Response.json({ text: cachedResponse, requestId });
     }
 
-    console.log("🟢 Gemini Generated Response:", answer);
+    console.log("🟢 Opem AI Generated Response:", answer, requestId);
     return Response.json({ text: answer, requestId });
 
   } catch (error) {

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { questions } from "@/components/prompt-question"
 import MainNavbar from "@/components/MainNavbar"
 import aiCcoreLogo from '@/components/ailogo.svg'
+import { documentStore } from "./document_data";
 import { v4 as uuidv4 } from 'uuid'; // You may need to install this package with: npm install uuid
 
 // Define model-to-endpoint mapping
@@ -93,7 +94,6 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
     // Map scenario IDs to their respective PDF files
     const scenarioDocumentMap: Record<number, string> = {
       1: 'Mobile-Device-Policy.pdf',
-      2: 'Password-Policy.pdf'
     }
 
     return scenarioDocumentMap[selectedQuestion.id] || 'Mobile-Device-Policy.pdf'
@@ -147,10 +147,11 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            prompt: technique.prompt(selectedScenario),
+            document_data: documentStore['Mobile-Device-Policy.pdf'],
+            prompt:  technique.prompt(selectedScenario),
             model: selectedModel,
             systemMessage: "",
-            filePath: getDocumentFilename(),
+            // filePath: getDocumentFilename(),
             requestId: requestId // Send the request ID with the request
           }),
         })

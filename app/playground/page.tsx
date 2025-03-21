@@ -9,6 +9,7 @@ import ModelPanel from "@/components/model-panel"
 import SinglePanelView from "@/components/single-panel-view"
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { documentStore } from "@/app/document_data";
 import aiCcoreLogo from '@/components/ailogo.svg'
 import PromptTechniques from "@/app/prompt-techniques"
 
@@ -270,9 +271,9 @@ export default function PlaygroundPage() {
           },
           signal: controllers[index].signal, // Add abort signal
           body: JSON.stringify({
-            prompt: conversationHistory,
+            prompt: documentStore['Mobile-Device-Policy.pdf'] + conversationHistory,
             model,
-            filePath: "Mobile-Device-Policy.pdf",
+            // filePath: "Mobile-Device-Policy.pdf",
             systemMessage: "Provide the correct option from A, B, C, D. Give clear and concise statement supporting your reason ",
           }),
         }).then(response => {

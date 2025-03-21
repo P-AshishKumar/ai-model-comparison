@@ -17,20 +17,20 @@ export async function POST(req: Request) {
     const modelName = model;
 
     // If filePath is provided, read the file
-    let fileMessage = null;
-    if (filePath) {
-      const absolutePath = path.join(process.cwd(), 'public', filePath);
+    // let fileMessage = null;
+    // if (filePath) {
+    //   const absolutePath = path.join(process.cwd(), 'public', filePath);
 
-      // Read the file content
-      const fileBuffer = fs.readFileSync(absolutePath);
-      fileMessage = {
-        type: 'file',
-        data: fileBuffer,
-        mimeType: 'application/pdf', // Set MIME type as per your file type
-      };
-    }
+    //   // Read the file content
+    //   const fileBuffer = fs.readFileSync(absolutePath);
+    //   fileMessage = {
+    //     type: 'file',
+    //     data: fileBuffer,
+    //     mimeType: 'application/pdf', // Set MIME type as per your file type
+    //   };
+    // }
 
-    // Prepare the messages array, including the file if present
+    // // Prepare the messages array, including the file if present
     const messages = [
       {
         role: 'user',
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
             type: 'text',
             text: prompt,  // Text content (prompt)
           },
-          fileMessage,  // Include file if present, otherwise it will be null
+          // fileMessage,  // Include file if present, otherwise it will be null
         ].filter(Boolean), // Filters out any null values (e.g., if fileMessage is null)
       },
     ];
