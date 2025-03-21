@@ -1,0 +1,20 @@
+ { "nokia_2017_policy": [
+  "No",
+    "No. As long as your Nokia 2017 complies with the policy requirements—such as having the manufacturer's installed operating system without jailbreaking, keeping OS updates current, and accepting security policies—it should not violate the mobile-device policy.",
+    
+    "No. The mobile device policy allows personal devices like your Nokia 2017, provided that the device still receives security updates from the manufacturer and you follow all security requirements including keeping the OS updated and not jailbreaking the device.",
+    
+    "No. Using your Nokia 2017 would not violate the policy as long as it meets the security requirements outlined in the mobile device policy: running the manufacturer's original operating system, accepting security policies, and keeping the operating system updated with the latest security patches."
+  ],
+  
+  
+  "compromised_device": [
+    "No",
+    "No. While the device shows unusual behavior, this could be explained by other factors. Battery drain might be due to aging or resource-intensive apps. IP connections to various countries could be legitimate for apps with global services. New apps might have been installed during an automatic update. More investigation is needed before concluding the device is compromised.",
+    
+    "No. The symptoms alone don't provide conclusive evidence of compromise. Battery drain can occur from normal usage patterns or battery degradation. Foreign IP connections may be from legitimate content delivery networks or cloud services. Unfamiliar apps could be system apps that were recently updated. Additional forensic analysis would be needed to determine if the device is actually compromised.",
+    
+    "No. These symptoms are concerning but not definitive proof of compromise. Battery drain could be due to a software bug or aging battery. Connection to foreign IP addresses may be from legitimate global services or content delivery networks. Unfamiliar apps might have been installed through legitimate app store updates. More investigation is required to confirm whether the device is truly compromised."
+  ]
+
+}

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { questions } from "@/components/prompt-question"
 import MainNavbar from "@/components/MainNavbar"
 import aiCcoreLogo from '@/components/ailogo.svg'
+import { v4 as uuidv4 } from 'uuid'; // You may need to install this package with: npm install uuid
 
 // Define model-to-endpoint mapping
 const modelToEndpointMapping: { [key: string]: string } = {
@@ -131,9 +132,16 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
       const techniques = selectedQuestion.promptTechnique.slice(0, 2);
       if (techniques.length < 2) return;
 
+      // Create a mapping of requestId to techniqueId for tracking
+      const requestMap = new Map();
+
       // Create an array of promises for both API calls
       const responsePromises = techniques.map(technique => {
         const endpoint = modelToEndpointMapping[selectedModel];
+        const requestId = uuidv4(); // Generate a unique request ID
+
+        // Store the mapping between requestId and techniqueId
+        requestMap.set(requestId, technique.id);
 
         return fetch(`/api/generate/${endpoint}`, {
           method: "POST",
@@ -141,12 +149,23 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
           body: JSON.stringify({
             prompt: technique.prompt(selectedScenario),
             model: selectedModel,
-            systemMessage: "You are an evaluator analyzing policies. Give a clear Yes or No answer with brief reasoning.",
-            filePath: selectedQuestion.id === 1 ? "Mobile-Device-Policy.pdf" : "Password-Policy.pdf"
+            systemMessage: "",
+            filePath: getDocumentFilename(),
+            requestId: requestId // Send the request ID with the request
           }),
         })
           .then(response => response.json())
-          .then(data => ({ techniqueId: technique.id, text: data.text || "No response received" }));
+          .then(data => {
+            // Get the technique ID from the request map using the returned request ID
+            const techniqueId = requestMap.get(data.requestId || requestId);
+
+            // Return both for final processing
+            return {
+              techniqueId,
+              text: data.text || "No response received",
+              requestId: data.requestId || requestId
+            };
+          });
       });
 
       // Process responses as they complete
@@ -155,8 +174,9 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
       // Update all responses at once to prevent UI flickering
       const newResponses = { ...responses };
       results.forEach(result => {
-        if (result) {
+        if (result && result.techniqueId) {
           newResponses[result.techniqueId] = result.text;
+          console.log(`Request ${result.requestId} completed for technique ${result.techniqueId}`);
         }
       });
 
@@ -281,19 +301,19 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
           </div>
         </div>
 
-        <div className="p-4 border-b border-gray-800/30">
-          <div className="bg-black/30 p-4 rounded text-sm font-mono text-gray-300 max-h-60 overflow-y-auto leading-relaxed whitespace-pre-wrap">
+        <div className="p-4 border-b border-gray-900">
+          <div className="bg-black/30 p-4 rounded text-sm font-mono text-gray-300 max-h-[250px] overflow-y-auto leading-relaxed whitespace-pre-wrap scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
             {formatPrompt(technique.prompt(selectedScenario || ''), techniqueId)}
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <div className="bg-gray-800/80 p-3 flex justify-between items-center">
             <h3 className="text-white font-medium">Response</h3>
             <div className="flex items-center gap-2">
               {hasResponse && (
                 <span className="text-xs text-gray-400">
-                  GPT-4o
+                  {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name.split(' ')[0] || 'GPT-4o'}
                 </span>
               )}
               <div className="bg-blue-900/40 text-blue-400 text-xs px-2 py-1 rounded font-mono">
@@ -302,7 +322,7 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
             </div>
           </div>
 
-          <div className="p-4 flex-1">
+          <div className="p-4 flex-1 relative overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="flex flex-col items-center">
@@ -311,7 +331,9 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
                 </div>
               </div>
             ) : hasResponse ? (
-              <div className="text-white whitespace-pre-wrap h-full">{responses[techniqueId]}</div>
+              <div className="text-white whitespace-pre-wrap h-full overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                {responses[techniqueId]}
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full">
                 <p className="text-gray-400 italic text-center mb-3">
@@ -397,7 +419,7 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
             <div className="mb-8">
               {/* Configuration panel */}
               <div className="bg-gray-900/60 border border-gray-800/50 rounded-lg p-6 mb-8">
-                <h3 className="text-xl font-medium text-white mb-4">Scenario   {selectedQuestion?.id}: {selectedQuestion?.title}</h3>
+                <h3 className="text-xl font-medium text-white mb-4">{selectedQuestion?.id}: {selectedQuestion?.title}</h3>
                 <p className="text-gray-300 mb-6">{selectedQuestion?.question}</p>
 
                 {/* Fixed techniques and model display */}

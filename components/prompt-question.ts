@@ -1,6 +1,6 @@
 export const questions = [
     {
-        id: 'Scenario1',
+        id: 'Scenario 1',
         title: 'Violation for Security Updates',
         question: 'I have a Nokia 2017 that I want to use as a personal device and connect to university devices. Would using this device violate the mobile-device policy?',
         promptTechnique:
@@ -18,9 +18,9 @@ export const questions = [
             ]
     },
     {
-        id: 'Scenario2',
+        id: 'Scenario 2',
         title: 'Device Compromise',
-        question: `Question: An employee's mobile device starts exhibiting.The device shows increased battery usage.It initiates several connections to various IP addresses.Some unfamiliar apps appear to be installed.Does this device show clear evidence of being compromised?`,
+        question: `Question: An employee's mobile device starts exhibiting unusual behavior. The device shows increased battery usage, initiates several connections to various IP addresses, and some unfamiliar apps appear to be installed. Does this device show clear evidence of being compromised?`,
         promptTechnique:
             [
                 {

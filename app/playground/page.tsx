@@ -2,8 +2,9 @@
 
 import { useState, Fragment, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeftRight, Eraser, ArrowLeft, CheckCircle, MessageCircle, Loader2 } from "lucide-react"
+import { ArrowLeftRight, Eraser, ArrowLeft, CheckCircle, MessageCircle, Loader2, File } from "lucide-react"
 import ChatInput from "@/components/chat-input"
+import { Sliders, X } from "lucide-react"
 import ModelPanel from "@/components/model-panel"
 import SinglePanelView from "@/components/single-panel-view"
 import Image from 'next/image'
@@ -19,11 +20,17 @@ const steps = [
   { number: 3, label: "Compare Results", isCompleted: false, isActive: false }
 ];
 
+
+
+
 const COMPARE_SINGLE = 0
 const COMPARE_DOUBLE = 1
 const COMPARE_TRIPLE = 2
 
 export default function PlaygroundPage() {
+
+  const [showDocumentPreview, setShowDocumentPreview] = useState(false)
+
   const router = useRouter()
   const [compareCount, setCompareCount] = useState(COMPARE_SINGLE)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -51,6 +58,42 @@ export default function PlaygroundPage() {
     B: false,
     C: false,
   });
+
+  const toggleDocumentPreview = () => {
+    setShowDocumentPreview(!showDocumentPreview)
+  }
+
+
+  const getDocumentFilename = () => {
+    // Default to first document
+    return "Mobile-Device-Policy.pdf"
+  }
+
+  const DocumentPreviewModal = () => {
+    if (!showDocumentPreview) return null
+
+    return (
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div className="bg-gray-900 rounded-lg w-full max-w-6xl h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-gray-800">
+            <h2 className="text-xl font-medium text-white flex items-center">
+              <File className="mr-2 h-5 w-5" /> {getDocumentFilename()}
+            </h2>
+            <Button onClick={toggleDocumentPreview} variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <iframe
+              src={`/${getDocumentFilename()}#view=FitH`}
+              className="w-full h-full"
+              title="Document Preview"
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Add the markExerciseComplete function here
   const markExerciseComplete = (exerciseId: string) => {
@@ -92,21 +135,21 @@ export default function PlaygroundPage() {
       if (model === 'gemini-2.0-flash') return responses.C !== null;
       return false;
     });
-    
+
     console.log("Models with responses:", modelsWithResponses);
-    
+
     // Check if all models have ratings
     const result = modelsWithResponses.every(model => {
       const ratings = modelRatings[model];
       console.log(`Checking ratings for ${model}:`, ratings);
-      return ratings && 
-        ratings.accuracy > 0 && 
-        ratings.reasoning > 0 && 
-        ratings.completeness > 0 && 
-        ratings.clarity > 0 && 
+      return ratings &&
+        ratings.accuracy > 0 &&
+        ratings.reasoning > 0 &&
+        ratings.completeness > 0 &&
+        ratings.clarity > 0 &&
         ratings.responseTime > 0;
     });
-    
+
     console.log("All ratings complete:", result);
     return result;
   };
@@ -156,16 +199,16 @@ export default function PlaygroundPage() {
 
       const newResponses = { ...responses }
       if (panelsToGenerate >= 1) {
-        newResponses.A = data[0].text
-        setMessages(prev => [...prev, { role: 'assistant', content: data[0].text, panelId: 'A' }])
+        newResponses.A = data[0]?.text || null
+        setMessages(prev => [...prev, { role: 'assistant', content: data[0]?.text || '', panelId: 'A' }])
       }
       if (panelsToGenerate >= 2) {
-        newResponses.B = data[1].text
-        setMessages(prev => [...prev, { role: 'assistant', content: data[1].text, panelId: 'B' }])
+        newResponses.B = data[1]?.text || null
+        setMessages(prev => [...prev, { role: 'assistant', content: data[1]?.text || '', panelId: 'B' }])
       }
       if (panelsToGenerate >= 3) {
-        newResponses.C = data[2].text
-        setMessages(prev => [...prev, { role: 'assistant', content: data[2].text, panelId: 'C' }])
+        newResponses.C = data[2]?.text || null
+        setMessages(prev => [...prev, { role: 'assistant', content: data[2]?.text || '', panelId: 'C' }])
       }
 
       setResponses(newResponses)
@@ -191,7 +234,7 @@ export default function PlaygroundPage() {
     }
   }
 
-    const compareQuestionSelect = async (question: { title: string, question: string, options: string[] }) => {
+  const compareQuestionSelect = async (question: { title: string, question: string, options: string[] }) => {
     const questionWithOptions = `${question.question}\nOptions:\n${question.options.join('\n')}`;
 
     // Update the prompt state with the question and options
@@ -204,11 +247,19 @@ export default function PlaygroundPage() {
       // Create an AbortController for each request
       const controllers = selectedModels.map(() => new AbortController());
 
+      // Define a mapping from model to panel ID
+      const modelToPanelMapping: { [key: string]: string } = {
+        "gpt-4o": "A",
+        "claude-3-7-sonnet-20250219": "B",
+        "gemini-2.0-flash": "C"
+      };
+
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
         const startTime = performance.now();
-        const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+        const panelId = modelToPanelMapping[model]; // Use the correct panel ID for each model
         setIsGeneratingPanels(prev => ({ ...prev, [panelId]: true }));
+
         return fetch(`/api/generate/${endpoint}`, {
           method: "POST",
           headers: {
@@ -222,7 +273,7 @@ export default function PlaygroundPage() {
             prompt: conversationHistory,
             model,
             filePath: "Mobile-Device-Policy.pdf",
-            systemMessage: "Provide the correct option from A, B, C, D. give clear and concise answer",
+            systemMessage: "Provide the correct option from A, B, C, D. Give clear and concise statement supporting your reason ",
           }),
         }).then(response => {
           const endTime = performance.now();
@@ -230,6 +281,7 @@ export default function PlaygroundPage() {
             model,
             text: data.text,
             responseTime: endTime - startTime,
+            panelId: modelToPanelMapping[model], // Include the correct panel ID in the result
           }));
         }).catch(error => {
           if (error.name === 'AbortError') {
@@ -241,15 +293,15 @@ export default function PlaygroundPage() {
       });
 
       // Set timeout to abort requests after 15 seconds
-      setTimeout(() => {
-        controllers.forEach(controller => controller.abort());
-      }, 15000);
+      // setTimeout(() => {
+      //   controllers.forEach(controller => controller.abort());
+      // }, 15000);
 
       fetchPromises.forEach(async (fetchPromise, index) => {
         try {
           const result = await fetchPromise;
           if (result) {
-            const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+            const panelId = result.panelId; // Use the panel ID from the result
 
             setResponses(prevResponses => ({
               ...prevResponses,
@@ -266,7 +318,8 @@ export default function PlaygroundPage() {
         } catch (error) {
           console.error(`Error generating response for model ${selectedModels[index]}:`, error);
         } finally {
-          const panelId = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+          const model = selectedModels[index];
+          const panelId = modelToPanelMapping[model]; // Get the correct panel ID
           setIsGeneratingPanels(prev => ({ ...prev, [panelId]: false }));
         }
       });
@@ -320,9 +373,9 @@ export default function PlaygroundPage() {
         <div className="w-24">
           {compareCount > COMPARE_SINGLE ? (
             // Back button in comparison view - goes back to selection screen
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setCompareCount(COMPARE_SINGLE);
                 // Reset responses when going back
@@ -331,7 +384,7 @@ export default function PlaygroundPage() {
                   B: null,
                   C: null,
                 });
-              }} 
+              }}
               className="text-gray-400 hover:text-white"
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
@@ -339,10 +392,10 @@ export default function PlaygroundPage() {
             </Button>
           ) : (
             // Regular back button in selection view
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => router.push('/week1')} 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/week1')}
               className="text-gray-400 hover:text-white"
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
@@ -361,24 +414,64 @@ export default function PlaygroundPage() {
             />
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
-          {compareCount === COMPARE_SINGLE ? (
-            // Show Compare Models button only in selection view
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleCompareClick} 
-              className="text-gray-400 hover:text-white" 
-              disabled={selectedModels.length < 2}
+          {/* Compare Models button - shown in both views */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCompareClick}
+            className="text-gray-400 hover:text-white"
+            disabled={compareCount > COMPARE_SINGLE ? false : selectedModels.length < 2 || !selectedQuestion}
+          >
+            <ArrowLeftRight className="mr-2 h-4 w-4" />
+            Compare Models
+          </Button>
+
+          {/* View Document button - shown in both views */}
+          <Button
+            variant="ghost"
+            size="sm"
+            // onClick={() => {
+            //   if (compareCount > COMPARE_SINGLE) {
+            //     // In comparison view, use functionality similar to SinglePanelView's document preview
+            //     window.open(`/Mobile-Device-Policy.pdf#view=FitH`, '_blank');
+            //   } else {
+            //     // In single panel view, use the existing document preview
+            //     // This assumes your SinglePanelView has toggleDocumentPreview exposed
+            //     // You might need to pass this as a prop to SinglePanelView
+            //     setShowDocumentPreview && setShowDocumentPreview(true);
+            //   }
+            // }}
+            onClick={toggleDocumentPreview}
+            className="text-gray-400 hover:text-white"
+          >
+            <File className="mr-2 h-4 w-4" />
+            View Document
+          </Button>
+
+          {/* <div className="absolute right-10">
+            <Button
+              onClick={toggleDocumentPreview}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 flex items-center gap-2"
+              aria-label="View Document"
             >
-              <ArrowLeftRight className="mr-2 h-4 w-4" />
-              Compare Models
+              <File className="h-4 w-4" />
+              <span>View Document</span>
             </Button>
-          ) : (
-            // Only show Discuss/Complete buttons if we have at least one response
-            hasAnyResponses() ? (
+          </div> */}
+
+          
+
+          {/* Clear button - clears only the responses */}
+          
+
+          {/* Discuss/Complete Exercise button - only in compare mode with responses */}
+          {compareCount > COMPARE_SINGLE && hasAnyResponses() ? (
+            <>
               <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   if (isDiscussMode) {
                     // If already in discuss mode, mark as complete and go back
@@ -395,7 +488,7 @@ export default function PlaygroundPage() {
                     }
                   }
                 }}
-                className="bg-blue-900 hover:bg-blue-800 border border-blue-700/30 shadow-sm hover:shadow-[0_0_10px_rgba(30,64,175,0.4)] transition-all duration-300 text-white flex items-center gap-2"
+                className="text-gray-400 hover:text-white"
               >
                 {isDiscussMode ? (
                   <>
@@ -409,17 +502,35 @@ export default function PlaygroundPage() {
                   </>
                 )}
               </Button>
-            ) : (
-              // Show a disabled button while waiting for responses
+
               <Button
-                disabled
-                className="bg-blue-900/50 border border-blue-700/30 text-white flex items-center gap-2 opacity-70"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  // Only clear responses, not the entire chat history
+                  setResponses({
+                    A: null,
+                    B: null,
+                    C: null,
+                  });
+                }}
+                className="text-gray-400 hover:text-white"
               >
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Waiting for responses...
+                <Eraser className="mr-2 h-4 w-4" />
+                Clear Results
               </Button>
-            )
-          )}
+            </>
+          
+          ) : compareCount > COMPARE_SINGLE && !hasAnyResponses() ? (
+            // Show a disabled button while waiting for responses
+            <Button
+              disabled
+              className="bg-blue-900/50 border border-blue-700/30 text-white flex items-center gap-2 opacity-70"
+            >
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Waiting for responses...
+            </Button>
+          ) : null}
         </div>
       </header>
 
@@ -430,13 +541,13 @@ export default function PlaygroundPage() {
             <Fragment key={navStep.number}>
               {/* Step indicator */}
               <div className="flex flex-col items-center">
-                <div 
+                <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center mb-1
-                    ${navStep.isActive 
-                      ? 'bg-indigo-600 text-white' 
-                      : navStep.isCompleted 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-gray-700 text-gray-300'
+                    ${navStep.isActive
+                      ? 'bg-indigo-600 text-white'
+                      : navStep.isCompleted
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-700 text-gray-300'
                     }`}
                 >
                   {navStep.isCompleted && !navStep.isActive ? (
@@ -449,13 +560,13 @@ export default function PlaygroundPage() {
                   {navStep.label}
                 </span>
               </div>
-              
+
               {/* Connector line between steps (except after the last step) */}
               {index < navSteps.length - 1 && (
-                <div 
+                <div
                   className={`w-12 h-0.5 mx-2 
-                    ${navSteps.findIndex(step => step.isActive) > index || 
-                      (index < navSteps.length - 1 && navSteps[index].isCompleted && navSteps[index+1].isCompleted)
+                    ${navSteps.findIndex(step => step.isActive) > index ||
+                      (index < navSteps.length - 1 && navSteps[index].isCompleted && navSteps[index + 1].isCompleted)
                       ? 'bg-green-600' : 'bg-gray-700'}`}
                 ></div>
               )}
@@ -536,6 +647,8 @@ export default function PlaygroundPage() {
           Please complete all ratings before proceeding
         </div>
       )}
+
+      <DocumentPreviewModal />
     </div>
   )
 }

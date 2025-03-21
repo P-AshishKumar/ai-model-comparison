@@ -84,16 +84,7 @@ export default function SinglePanelView({ onQuestionSelect, selectedQuestion, se
           </h2>
 
           {/* View Document button positioned absolutely to the right of the title */}
-          <div className="absolute right-10">
-            <Button
-              onClick={toggleDocumentPreview}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 flex items-center gap-2"
-              aria-label="View Document"
-            >
-              <File className="h-4 w-4" />
-              <span>View Document</span>
-            </Button>
-          </div>
+          
         </div>
 
         <div className="header mb-4 flex items-center space-x-2">
