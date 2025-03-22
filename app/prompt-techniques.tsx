@@ -178,7 +178,7 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
       results.forEach(result => {
         if (result && result.techniqueId) {
           newResponses[result.techniqueId] = result.text;
-          console.log(`Request ${result.requestId} completed for technique ${result.techniqueId}`);
+          // console.log(`Request ${result.requestId} completed for technique ${result.techniqueId}`);
         }
       });
 

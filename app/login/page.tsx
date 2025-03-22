@@ -17,11 +17,11 @@ export default function LoginPage() {
           <p className="text-muted-foreground mt-2">Login to access your AI-CCORE Bootcamp dashboard</p>
         </div>
         <LoginForm />
-        <div className="mt-4 p-4 bg-muted rounded-lg text-sm">
+        {/* <div className="mt-4 p-4 bg-muted rounded-lg text-sm">
           <p className="font-medium">For testing, use these credentials:</p>
           <p>Email: test@example.com</p>
           <p>Password: password123</p>
-        </div>
+        </div> */}
       </div>
     </div>
   )

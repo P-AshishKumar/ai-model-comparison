@@ -68,7 +68,7 @@ export default function RegisterForm() {
         throw new Error(data.error || "Failed to register")
       }
 
-      console.log("Registration successful:", data)
+      // console.log("Registration successful:", data)
 
       // Redirect to login page with success message
       router.push("/login?registered=true")

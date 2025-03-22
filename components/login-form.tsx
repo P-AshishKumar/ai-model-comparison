@@ -56,7 +56,7 @@ export default function LoginForm() {
         body: JSON.stringify({ email, password }),
       })
 
-      console.log(response)
+      // console.log(response)
       let data
       try {
         // Check if response is JSON
@@ -88,7 +88,7 @@ export default function LoginForm() {
         }
       }
 
-      console.log("Login successful, redirecting to dashboard...")
+      // console.log("Login successful, redirecting to dashboard...")
       // Check if response includes redirect URL
       if (data.redirect) {
         router.push(data.redirect)
@@ -96,7 +96,7 @@ export default function LoginForm() {
         // Default fallback
         router.push("/dashboard")
       }
-      console.log("Router.push called")
+      // console.log("Router.push called")
     } catch (err: any) {
       setError(err.message || "An error occurred during login. Please try again.")
       console.error(err)
@@ -124,9 +124,9 @@ export default function LoginForm() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+              {/* <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                 Forgot password?
-              </Link>
+              </Link> */}
             </div>
             <Input id="password" name="password" type="password" placeholder="••••••••" required disabled={isLoading} />
           </div>

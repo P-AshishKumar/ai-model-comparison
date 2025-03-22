@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation'
 import { documentStore } from "@/app/document_data";
 import aiCcoreLogo from '@/components/ailogo.svg'
 import PromptTechniques from "@/app/prompt-techniques"
-import MainNavbar from "@/components/mainNavbar"
+import MainNavbar from "@/components/MainNavbar"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { useApiStore } from "@/hooks/useApiStore"
 
@@ -122,7 +122,7 @@ export default function PlaygroundPage() {
 
   // Add this before the areAllRatingsComplete function
   useEffect(() => {
-    console.log("Model ratings updated:", modelRatings);
+    // console.log("Model ratings updated:", modelRatings);
   }, [modelRatings]);
 
   // Update the areAllRatingsComplete function with debug info
@@ -135,12 +135,12 @@ export default function PlaygroundPage() {
       return false;
     });
 
-    console.log("Models with responses:", modelsWithResponses);
+    // console.log("Models with responses:", modelsWithResponses);
 
     // Check if all models have ratings
     const result = modelsWithResponses.every(model => {
       const ratings = modelRatings[model];
-      console.log(`Checking ratings for ${model}:`, ratings);
+      // console.log(`Checking ratings for ${model}:`, ratings);
       return ratings &&
         ratings.accuracy > 0 &&
         ratings.reasoning > 0 &&
@@ -149,7 +149,7 @@ export default function PlaygroundPage() {
         ratings.responseTime > 0;
     });
 
-    console.log("All ratings complete:", result);
+    // console.log("All ratings complete:", result);
     return result;
   };
 
@@ -237,13 +237,13 @@ export default function PlaygroundPage() {
   }
 
   const handleCompareClick = () => {
-    console.log("Question for comparing", selectedQuestion)
+    // console.log("Question for comparing", selectedQuestion)
     if (selectedModels.length >= 2) {
       setCompareCount(selectedModels.length === 2 ? COMPARE_DOUBLE : COMPARE_TRIPLE)
-      console.log("setcomparecount", compareCount)
+      // console.log("setcomparecount", compareCount)
       compareQuestionSelect(selectedQuestion)  // Trigger comparison based on selected models
     } else {
-      console.log("Please select at least two models to compare.")
+      // console.log("Please select at least two models to compare.")
     }
   }
 
