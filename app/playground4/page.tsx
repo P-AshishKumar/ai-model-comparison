@@ -87,7 +87,7 @@ export default function Playground4Page() {
     {
       number: 1,
       title: "Setting up the Streamlit Application",
-      prompt: "Generate a basic Streamlit app that creates a web page with a text input box for users to write Python code. The app should display an output area for the results and a space for AI-based code suggestions.",
+      prompt: " Create a virtual environment and generate a basic Streamlit app that creates a web page with a text input box for users to write Python code. The app should display an output area for the results and a space for AI-based code suggestions.",
     },
     {
       number: 2,
