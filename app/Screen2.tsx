@@ -123,7 +123,7 @@ const Screen2 = ({
                                     : "bg-gray-800 text-gray-400 cursor-not-allowed"}`}
                             >
                                 {isExerciseActive("exercise1")
-                                    ? (completedExercises.includes("exercise1") ? "Review Exercise" : "Start Exercise")
+                                    ? (completedExercises.includes("exercise1") ? "Redo Exercise" : "Start Exercise")
                                     : "Locked"}
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -159,7 +159,7 @@ const Screen2 = ({
                                     : "w-full bg-gray-800 text-gray-400 cursor-not-allowed"}
                             >
                                 {completedExercises.includes('exercise2') 
-                                    ? "Review Exercise" 
+                                    ? "Redo Exercise" 
                                     : completedExercises.includes('exercise1') 
                                         ? "Start Exercise" 
                                         : "Complete Exercise 1 First"
@@ -203,7 +203,7 @@ const Screen2 = ({
                                     : "bg-gray-800 text-gray-400 cursor-not-allowed"}`}
                             >
                                 {isExerciseActive("exercise3")
-                                    ? (completedExercises.includes("exercise3") ? "Review Exercise" : "Start Exercise")
+                                    ? (completedExercises.includes("exercise3") ? "Redo Exercise" : "Start Exercise")
                                     : "Locked"}
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -244,7 +244,7 @@ const Screen2 = ({
                                     : "bg-gray-800 text-gray-400 cursor-not-allowed"}`}
                             >
                                 {isExerciseActive("exercise4")
-                                    ? (completedExercises.includes("exercise4") ? "Review Exercise" : "Start Exercise")
+                                    ? (completedExercises.includes("exercise4") ? "Redo Exercise" : "Start Exercise")
                                     : "Locked"}
                                 <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>

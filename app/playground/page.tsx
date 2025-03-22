@@ -371,6 +371,8 @@ export default function PlaygroundPage() {
   return (
     <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
       <header className="flex items-center justify-between px-4 h-14 border-b border-gray-800/50 backdrop-blur-sm bg-black/20 shrink-0">
+        
+        
         <div className="w-24">
           {compareCount > COMPARE_SINGLE ? (
             // Back button in comparison view - goes back to selection screen
@@ -405,24 +407,27 @@ export default function PlaygroundPage() {
           )}
         </div>
 
-        <div className="flex-1 flex justify-center items-center text-white font-semibold text-lg">
-          <div className="flex items-center">
+            <div className="flex-1 flex justify-center items-center text-white font-semibold text-lg">
+            <div className="flex items-center ml-50">
             <Image
               src={aiCcoreLogo}
               alt="AI-CCORE Logo"
               width={120}
               height={115}
             />
-          </div>
+            </div>
         </div>
+
+
 
         <div className="flex items-center space-x-2">
           {/* Compare Models button - shown in both views */}
           <Button
-            variant="ghost"
+            
             size="sm"
             onClick={handleCompareClick}
-            className="text-gray-400 hover:text-white"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
+            // className="text-gray-400 hover:text-white"
             disabled={compareCount > COMPARE_SINGLE ? false : selectedModels.length < 2 || !selectedQuestion}
           >
             <ArrowLeftRight className="mr-2 h-4 w-4" />
@@ -445,7 +450,8 @@ export default function PlaygroundPage() {
             //   }
             // }}
             onClick={toggleDocumentPreview}
-            className="text-gray-400 hover:text-white"
+            // className="text-gray-400 hover:text-white"
+             className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
           >
             <File className="mr-2 h-4 w-4" />
             View Document
@@ -471,8 +477,10 @@ export default function PlaygroundPage() {
           {compareCount > COMPARE_SINGLE && hasAnyResponses() ? (
             <>
               <Button
-                variant="ghost"
-                size="sm"
+                // variant="ghost"
+                // size="sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
+                
                 onClick={() => {
                   if (isDiscussMode) {
                     // If already in discuss mode, mark as complete and go back
@@ -489,7 +497,7 @@ export default function PlaygroundPage() {
                     }
                   }
                 }}
-                className="text-gray-400 hover:text-white"
+                // className="text-gray-400 hover:text-white"
               >
                 {isDiscussMode ? (
                   <>
@@ -505,8 +513,9 @@ export default function PlaygroundPage() {
               </Button>
 
               <Button
-                variant="ghost"
-                size="sm"
+                // variant="ghost"
+                // size="sm"
+                 className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
                 onClick={() => {
                   // Only clear responses, not the entire chat history
                   setResponses({
@@ -515,7 +524,7 @@ export default function PlaygroundPage() {
                     C: null,
                   });
                 }}
-                className="text-gray-400 hover:text-white"
+                // className="text-gray-400 hover:text-white"
               >
                 <Eraser className="mr-2 h-4 w-4" />
                 Clear Results
