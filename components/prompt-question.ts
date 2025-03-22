@@ -20,18 +20,45 @@ export const questions = [
     {
         id: 'Scenario 2',
         title: 'Email Storage Compliance in MDM Policy',
-        question: `I want to allow my team to store work emails on their devices for up to three months to reference older communications.`,
+        question: `Employee used personal device while waiting 4 weeks for company laptop (beyond 3-week policy). Device is properly secured with company controls, and CISO granted formal exception for 5-6 weeks until data transfer and wiping. This arrangement is acceptable from security and compliance perspective.`,
         promptTechnique:
             [
                 {
                     id: 'zero-shot',
                     title: 'Zero-shot Prompting',
-                    prompt: (question: string) => `Question: ${question} Please give me a yes or no answer.`,
+                    prompt: (question: string) => `One of my employees did not receive a company laptop until 4 weeks after joining, despite the company policy stating laptops would be provided within 3 weeks. During this time, she used her personal device strictly under IT’s guidance and with WPI-approved security configurations applied. The device has: A strong passcode to unlock, Encryption enabled, The latest vendor OS updates installed, University security policies configured (e.g., remote wipe, password requirements), No jailbreaking or modifications. Now that she has received her company laptop, she is unable to transfer data due to network privacy settings. However, an exception has been formally requested and granted by the Chief Information Security Officer to continue using the personal device to store and access company data for the next 5–6 weeks, after which all data will be securely transferred and wiped from the personal device. Considering all factors, is this arrangement acceptable from a security and compliance perspective? Please answer yes or no ?`,
                 },
                 {
                     id: 'chain-of-thought',
                     title: 'Chain-of-thought Prompting',
-                    prompt: (question: string) => `Let's analyze whether this scenario is permissible as per mobile device management. \n\nQuestion: ${question} .\nIs this permissible under the current policy.Can you just answer yes or no please ? \n\nThink through:\n \nStep 1: Identify what section of the policy addresses email storage on devices. \nStep 2: Determine if there are specific time limitations mentioned. \nStep 3: Analyze whether three months of email storage would comply with or violate the stated limitations. \nStep 4: Consider if any exceptions might apply to this scenario. \nStep 5: Provide a final determination with policy justification.`,
+                    prompt: (question: string) => `I need to determine if it's acceptable for an employee to continue using her personal device for company data. Let me analyze this step by step: What is the initial policy situation regarding company laptops? How long did the employee wait for a company laptop compared to policy? What security measures are currently in place on the personal device? Is the latest vendor OS updated installed? (Yes/No) Why can't the data be transferred now that she has received the company laptop? Has proper authorization been obtained for continued personal device use? What is the timeframe for this exception? What is the plan for the company data after this period ends? Considering all factors, is this arrangement acceptable from a security and compliance perspective? Please answer yes or no ?  \n\nThink through:
+ 
+Step-by-Step Analysis:
+1. What is the initial policy situation regarding company laptops?
+The policy states that university-owned smart devices (laptops not explicitly mentioned, but inferred under university-issued devices) are provided to certain employees when deemed necessary by their supervisors. IT configures and manages these devices. \n 
+2. How long did the employee wait for a company laptop compared to policy? 
+🟨 Not specified in the policy document. Needs case-specific information.\n 
+3. What security measures are currently in place on the personal device?
+The policy requires that any personally owned device accessing university resources must:\n 
+Use a vendor-provided OS
+Stay updated
+Have a PIN/password
+Support remote wipe on 10 failed attempts or if lost
+Limit email storage to 4 weeks
+Not be jailbroken\n 
+4. Is the latest vendor OS update installed? (Yes/No)\n 
+❓ Unknown — must be checked for the specific device in question.\n 
+5. Why can't the data be transferred now that she has received the company laptop?\n 
+🟨 Not addressed in the policy. You need to identify any operational or technical limitations involved.\n 
+6. Has proper authorization been obtained for continued personal device use?
+Policy states:\n 
+“Exceptions... may be required... contact WPI’s Chief Information Security Officer.”\n 
+So, if explicit exception approval from the CISO is not obtained, it’s a policy violation.\n 
+7. What is the timeframe for this exception?\n 
+⛔ If the exception has not been approved, there is no valid timeframe.\n 
+8. What is the plan for the company data after this period ends?\n 
+Policy requires remote wipe if the device is lost/stolen. There's no guidance for "planned transfer" — best practice would be to remove data from the personal device.\n 
+`,
                 }
             ]
     }

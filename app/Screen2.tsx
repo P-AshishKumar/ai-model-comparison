@@ -60,20 +60,43 @@ const Screen2 = ({
         router.push('/playground2');
     };
 
+    async function handleLogout() {
+        try {
+          const response = await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+    
+          if (response.ok) {
+            router.push("/login")
+          }
+        } catch (error) {
+          console.error("Logout error:", error)
+        }
+      }
+
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950">
             {/* Replace the header with MainNavbar */}
             <MainNavbar 
-                // title="Week 1"
-                // subtitle="AI Model Comparison"
                 backUrl="/"
                 backLabel="Back"
                 onBack={() => router.push('/')}
-                // rightContent={
-                //     <div className="flex items-center gap-2">
-                //         <span className="text-sm text-gray-400">AI-CCORE</span>
-                //     </div>
-                // }
+                rightContent={
+                    <div className="flex items-center gap-4">
+                        <Button
+                            onClick={handleLogout}
+                            variant="outline"
+                            className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
+                            size="sm"
+                        >
+                            Logout
+                        </Button>
+                        {/* <span className="text-sm text-gray-400">AI-CCORE</span> */}
+                    </div>
+                }
             />
 
             {/* Main content */}
@@ -229,11 +252,12 @@ const Screen2 = ({
                                 )}
                             </div>
                             <CardDescription className={isExerciseActive("exercise4") ? "text-indigo-200" : "text-gray-400"}>
-                                Results Interpretation
+                               {/* Fast-Track Development */}
+                               Copilot-Driven Development
                             </CardDescription>
                         </CardHeader>
                         <CardContent className={isExerciseActive("exercise4") ? "text-gray-200" : "text-gray-300"}>
-                            <p>Learn how to interpret and document model comparison results to make informed decisions.</p>
+                            <p>Use Copilot to build a notebook interface integrated with LLM in VS Code, streamlining development and significantly decreasing development time.</p>
                         </CardContent>
                         <CardFooter>
                             <Button

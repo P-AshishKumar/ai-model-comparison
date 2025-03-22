@@ -10,6 +10,7 @@ import MainNavbar from "@/components/MainNavbar"
 import aiCcoreLogo from '@/components/ailogo.svg'
 import { documentStore } from "./document_data";
 import { v4 as uuidv4 } from 'uuid'; // You may need to install this package with: npm install uuid
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 
 // Define model-to-endpoint mapping
 const modelToEndpointMapping: { [key: string]: string } = {
@@ -177,7 +178,7 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
       results.forEach(result => {
         if (result && result.techniqueId) {
           newResponses[result.techniqueId] = result.text;
-          console.log(`Request ${result.requestId} completed for technique ${result.techniqueId}`);
+          // console.log(`Request ${result.requestId} completed for technique ${result.techniqueId}`);
         }
       });
 
@@ -516,6 +517,8 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
   };
 
   return (
+
+     
     <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
       <MainNavbar
         title={""}
@@ -579,16 +582,26 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
               </Fragment>
             ))}
           </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                  <span className="w-10">
+                        <Button
+                          size="sm"
+                          onClick={toggleDocumentPreview}
+                          className="bg-indigo-700 hover:bg-indigo-900 text-white rounded-md h-9 flex items-center"
+                          >
+                          <File className="h-4 w-4" />
+                          View Document
+                        </Button>
+                  </span>
+                </TooltipTrigger>
+                         <TooltipContent side="bottom" align="center">
+                          This document is used as context for these scenarios.
+                           </TooltipContent>
+              </Tooltip>
+              </TooltipProvider>
 
-          {/* Right side - document preview button */}
-          <Button
-            onClick={toggleDocumentPreview}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
-            aria-label="Preview Document"
-          >
-            <File className="h-4 w-4" />
-            <span className="text-sm">View Document</span>
-          </Button>
         </div>
       </div>
 
@@ -611,5 +624,6 @@ export default function Exercise2Page({ initialFileName = null, onScenarioChange
         </div>
       </footer>
     </div>
+    
   );
 }

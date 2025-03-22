@@ -16,6 +16,8 @@ import {
     loanApplicationData,
     trainSensorData
 } from "./components/data"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button"
 
 interface SavedPrompt {
     id: string
@@ -42,6 +44,8 @@ export default function Home() {
     const [messages, setMessages] = useState<Record<string, Message[]>>({})
     const [inputMessage, setInputMessage] = useState("")
     const [showSavedPrompts, setShowSavedPrompts] = useState(false)
+    const [promptCount, setPromptCount] = useState<Record<string, number>>({})
+    const [showTooltip, setShowTooltip] = useState(false)
     
     // Remove these individual state variables since we'll use the function directly
     // const [data, setData] = useState<any>(null)
@@ -138,6 +142,12 @@ export default function Home() {
         setMessages((prev) => ({
             ...prev,
             [selectedTask]: [...(prev[selectedTask] || []), newMessage],
+        }))
+        
+        // Increment prompt count for the current task
+        setPromptCount(prev => ({
+            ...prev,
+            [selectedTask]: (prev[selectedTask] || 0) + 1
         }))
 
         setInputMessage("")
@@ -282,14 +292,43 @@ export default function Home() {
         }
     ];
 
+    // Add this function to your component
+    const markExerciseComplete = (exerciseId: string) => {
+        // Get current completed exercises
+        const storedCompletedExercises = localStorage.getItem('completedExercises') || '[]';
+        const completedExercises = JSON.parse(storedCompletedExercises);
+    
+        // Add the current exercise if not already included
+        if (!completedExercises.includes(exerciseId)) {
+            completedExercises.push(exerciseId);
+            localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+        }
+        
+        // Navigate back to Week 1
+        router.push('/week1');
+    };
+
     return (
         <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
-            <MainNavbar 
-                title={""} // Add the title prop using the function you already have
-                onBack={handleBackNavigation}
-                backLabel={currentStep === "scenario" ? "Back" : "Back"}
-                onClear={currentStep === "chat" ? handleClearChat : undefined}
-            />
+            <TooltipProvider>
+                <MainNavbar 
+                    title={""} 
+                    onBack={handleBackNavigation}
+                    backLabel={currentStep === "scenario" ? "Back" : "Back"}
+                    onClear={currentStep === "chat" ? handleClearChat : undefined}
+                    rightContent={
+                        currentStep === "chat" ? (
+                            <Button
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2"
+                                onClick={() => markExerciseComplete("exercise3")}
+                            >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Complete Exercise
+                            </Button>
+                        ) : null
+                    }
+                />
+            </TooltipProvider>
 
             {/* Add the progress indicator here */}
             <div className="flex justify-center py-4 bg-gray-900/50 border-b border-gray-800">
