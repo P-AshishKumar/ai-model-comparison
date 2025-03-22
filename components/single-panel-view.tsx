@@ -7,6 +7,7 @@ import { Sliders, X, File } from "lucide-react" // Add File icon import
 import ModelSelector from "@/components/model-selector"
 import { questions } from "@/components/questions"
 import { Tooltip as ReactTooltip } from "react-tooltip"
+import { documentStore } from "./document_data";
 import "/styles/SinglePanelView.css"
 
 interface SinglePanelViewProps {

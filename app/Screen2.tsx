@@ -229,11 +229,12 @@ const Screen2 = ({
                                 )}
                             </div>
                             <CardDescription className={isExerciseActive("exercise4") ? "text-indigo-200" : "text-gray-400"}>
-                                Results Interpretation
+                               {/* Fast-Track Development */}
+                               Copilot-Driven Development
                             </CardDescription>
                         </CardHeader>
                         <CardContent className={isExerciseActive("exercise4") ? "text-gray-200" : "text-gray-300"}>
-                            <p>Learn how to interpret and document model comparison results to make informed decisions.</p>
+                            <p>Use Copilot to build a notebook interface integrated with LLM in VS Code, streamlining development and significantly decreasing development time.</p>
                         </CardContent>
                         <CardFooter>
                             <Button

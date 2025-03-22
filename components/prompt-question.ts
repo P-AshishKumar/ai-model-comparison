@@ -20,18 +20,18 @@ export const questions = [
     {
         id: 'Scenario 2',
         title: 'Email Storage Compliance in MDM Policy',
-        question: `I want to allow my team to store work emails on their devices for up to three months to reference older communications.`,
+        question: `I want to allow my team to store work emails on their devices for up to three months to reference older communications. Is this permissible under the current policy.Can you just answer yes or no please with justification`,
         promptTechnique:
             [
                 {
                     id: 'zero-shot',
                     title: 'Zero-shot Prompting',
-                    prompt: (question: string) => `Question: ${question} Please give me a yes or no answer.`,
+                    prompt: (question: string) => `Question: ${question} ?`,
                 },
                 {
                     id: 'chain-of-thought',
                     title: 'Chain-of-thought Prompting',
-                    prompt: (question: string) => `Let's analyze whether this scenario is permissible as per mobile device management. \n\nQuestion: ${question} .\nIs this permissible under the current policy.Can you just answer yes or no please ? \n\nThink through:\n \nStep 1: Identify what section of the policy addresses email storage on devices. \nStep 2: Determine if there are specific time limitations mentioned. \nStep 3: Analyze whether three months of email storage would comply with or violate the stated limitations. \nStep 4: Consider if any exceptions might apply to this scenario. \nStep 5: Provide a final determination with policy justification.`,
+                    prompt: (question: string) => `Let's analyze whether this scenario is permissible as per mobile device management. \n\nQuestion: ${question} .\n\nThink through:\n \nStep 1: Identify what section of the policy addresses email storage on devices. \nStep 2: Determine if there are specific time limitations mentioned. \nStep 3: Analyze whether three months of email storage would comply with or violate the stated limitations. \nStep 4: Consider if any exceptions might apply to this scenario. \nStep 5: Provide a final determination with policy justification.`,
                 }
             ]
     }

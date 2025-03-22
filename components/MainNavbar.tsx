@@ -54,7 +54,7 @@ export default function MainNavbar({
 
   return (
     <header className="flex flex-col border-b border-gray-800/50 py-4 backdrop-blur-sm bg-black/20 sticky top-0 z-10">
-      <div className="container mx-auto flex items-center justify-between px-4">
+      <div className="flex items-center justify-between px-4">
         <div className="w-24">
           <Button 
             variant="ghost" 

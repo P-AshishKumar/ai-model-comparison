@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRight } from 'lucide-react'
 import MainNavbar from "@/components/MainNavbar" // Import MainNavbar
+import { redirect } from "next/navigation";
 
 const Screen1 = () => {
     const router = useRouter();
@@ -19,16 +20,16 @@ const Screen1 = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950">
             {/* Replace the header with MainNavbar */}
-            <MainNavbar 
-                // title="AI Bootcamp Labs"
-                // subtitle="Learning Portal"
-                // No backUrl needed here since this is the main page
-                // rightContent={
-                //     <div className="flex items-center gap-2">
-                //         <span className="text-sm text-gray-400">AI-CCORE</span>
-                //     </div>
-                // }
-            />
+            {/* <MainNavbar 
+                title="AI Bootcamp Labs"
+                subtitle="Learning Portal"
+                No backUrl needed here since this is the main page
+                rightContent={
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-400">AI-CCORE</span>
+                    </div>
+                }
+            /> */}
 
             {/* Main content */}
             <main className="flex-grow container mx-auto py-12 px-4">

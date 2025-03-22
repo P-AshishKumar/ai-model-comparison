@@ -12,7 +12,9 @@ import { useRouter } from 'next/navigation'
 import { documentStore } from "@/app/document_data";
 import aiCcoreLogo from '@/components/ailogo.svg'
 import PromptTechniques from "@/app/prompt-techniques"
-
+import MainNavbar from "@/components/mainNavbar"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { useApiStore } from "@/hooks/useApiStore"
 
 // Progress bar steps
 const steps = [
@@ -20,9 +22,6 @@ const steps = [
   { number: 2, label: "Select Question", isCompleted: false, isActive: true },
   { number: 3, label: "Compare Results", isCompleted: false, isActive: false }
 ];
-
-
-
 
 const COMPARE_SINGLE = 0
 const COMPARE_DOUBLE = 1
@@ -63,7 +62,6 @@ export default function PlaygroundPage() {
   const toggleDocumentPreview = () => {
     setShowDocumentPreview(!showDocumentPreview)
   }
-
 
   const getDocumentFilename = () => {
     // Default to first document
@@ -165,6 +163,9 @@ export default function PlaygroundPage() {
     setShowRatingWarning(false);
   };
 
+  // Add this hook near your other state declarations
+  const { getKey } = useApiStore()
+
   // Function to handle the message submission
   const handleSubmit = async (input: string) => {
     if (!input) return
@@ -184,12 +185,23 @@ export default function PlaygroundPage() {
 
       const fetchPromises = selectedModels.map((model, index) => {
         const endpoint = modelToEndpointMapping[model];
+        // Get the appropriate API key based on endpoint
+        const apiKeyProvider = endpoint === 'openai' ? 'openai' : 
+                              endpoint === 'anthropic' ? 'anthropic' : 'google';
+        const apiKey = getKey(apiKeyProvider);
+
         return fetch(`/api/generate/${endpoint}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            // Add API key header if available
+            ...(apiKey ? { "X-API-KEY": apiKey } : {})
+          },
           body: JSON.stringify({
             prompt: conversationHistory,
             model,
+            // Also include the API key in the request body as a fallback
+            apiKey: apiKey
           }),
         });
       });
@@ -237,16 +249,18 @@ export default function PlaygroundPage() {
 
   const compareQuestionSelect = async (question: { title: string, question: string, options: string[] }) => {
     const questionWithOptions = `${question.question}\nOptions:\n${question.options.join('\n')}`;
-
-    // Update the prompt state with the question and options
     setPrompt(questionWithOptions);
     setIsGenerating(true);
 
+    // Reset previous responses when starting a new comparison
+    setResponses({
+      A: null,
+      B: null,
+      C: null,
+    });
+
     try {
       const conversationHistory = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n') + `\nuser: ${questionWithOptions}`;
-
-      // Create an AbortController for each request
-      const controllers = selectedModels.map(() => new AbortController());
 
       // Define a mapping from model to panel ID
       const modelToPanelMapping: { [key: string]: string } = {
@@ -255,77 +269,93 @@ export default function PlaygroundPage() {
         "gemini-2.0-flash": "C"
       };
 
-      const fetchPromises = selectedModels.map((model, index) => {
-        const endpoint = modelToEndpointMapping[model];
-        const startTime = performance.now();
-        const panelId = modelToPanelMapping[model]; // Use the correct panel ID for each model
-        setIsGeneratingPanels(prev => ({ ...prev, [panelId]: true }));
-
-        return fetch(`/api/generate/${endpoint}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Add caching headers
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache"
-          },
-          signal: controllers[index].signal, // Add abort signal
-          body: JSON.stringify({
-            prompt: documentStore['Mobile-Device-Policy.pdf'] + conversationHistory,
-            model,
-            // filePath: "Mobile-Device-Policy.pdf",
-            systemMessage: "Provide the correct option from A, B, C, D. Give clear and concise statement supporting your reason ",
-          }),
-        }).then(response => {
-          const endTime = performance.now();
-          return response.json().then(data => ({
-            model,
-            text: data.text,
-            responseTime: endTime - startTime,
-            panelId: modelToPanelMapping[model], // Include the correct panel ID in the result
-          }));
-        }).catch(error => {
-          if (error.name === 'AbortError') {
-            console.log(`Request for ${model} aborted due to timeout`);
-            return null;
-          }
-          throw error;
-        });
+      // Set all selected panels to generating state
+      const newGeneratingState = { ...isGeneratingPanels };
+      selectedModels.forEach(model => {
+        const panelId = modelToPanelMapping[model];
+        newGeneratingState[panelId] = true;
       });
+      setIsGeneratingPanels(newGeneratingState);
 
-      // Set timeout to abort requests after 15 seconds
-      // setTimeout(() => {
-      //   controllers.forEach(controller => controller.abort());
-      // }, 15000);
-
-      fetchPromises.forEach(async (fetchPromise, index) => {
+      // Process each model in parallel
+      selectedModels.forEach(async (model) => {
+        const endpoint = modelToEndpointMapping[model];
+        const panelId = modelToPanelMapping[model];
+        
+        // Get the appropriate API key based on endpoint
+        const apiKeyProvider = endpoint === 'openai' ? 'openai' : 
+                              endpoint === 'anthropic' ? 'anthropic' : 'google';
+        const apiKey = getKey(apiKeyProvider);
+        
         try {
-          const result = await fetchPromise;
-          if (result) {
-            const panelId = result.panelId; // Use the panel ID from the result
+          const response = await fetch(`/api/generate/${endpoint}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "no-cache",
+              "Pragma": "no-cache",
+              // Add API key header if available
+              ...(apiKey ? { "X-API-KEY": apiKey } : {})
+            },
+            body: JSON.stringify({
+              prompt: documentStore['Mobile-Device-Policy.pdf'] + conversationHistory,
+              model,
+              systemMessage: "Provide the correct option from A, B, C, D. Give clear and concise statement supporting your reason",
+              // Also include the API key in the request body as a fallback
+              apiKey: apiKey
+            }),
+          });
 
-            setResponses(prevResponses => ({
-              ...prevResponses,
-              [panelId]: result.text,
-            }));
-
-            setMessages(prevMessages => [
-              ...prevMessages,
-              { role: 'assistant', content: result.text, panelId },
-            ]);
-
-            console.log(`Response for ${panelId} received in ${result.responseTime.toFixed(2)} ms`);
+          // Handle non-200 responses
+          if (!response.ok) {
+            throw new Error(`API returned ${response.status}: ${response.statusText}`);
           }
+
+          const data = await response.json();
+          
+          if (data.error) {
+            throw new Error(data.error);
+          }
+
+          // Update the response for this specific panel
+          setResponses(prev => ({
+            ...prev,
+            [panelId]: data.text
+          }));
+
+          setMessages(prev => [
+            ...prev,
+            { role: 'assistant', content: data.text, panelId }
+          ]);
+
         } catch (error) {
-          console.error(`Error generating response for model ${selectedModels[index]}:`, error);
+          console.error(`Error generating response for model ${model}:`, error);
+          
+          // Set error message as the response
+          const errorMessage = 
+           `**Response from the ${model} model is delayed**\n\n` +
+            `The request is still processing and may take a bit longer.`;
+
+          setResponses(prev => ({
+            ...prev,
+            [panelId]: errorMessage
+          }));
+
+          setMessages(prev => [
+            ...prev,
+            { role: 'assistant', content: errorMessage, panelId }
+          ]);
         } finally {
-          const model = selectedModels[index];
-          const panelId = modelToPanelMapping[model]; // Get the correct panel ID
-          setIsGeneratingPanels(prev => ({ ...prev, [panelId]: false }));
+          // Mark this panel as no longer generating
+          setIsGeneratingPanels(prev => ({
+            ...prev,
+            [panelId]: false
+          }));
         }
       });
+
     } catch (error) {
-      console.error("Error generating responses:", error);
+      console.error("Error in comparison setup:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -369,296 +399,249 @@ export default function PlaygroundPage() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
-      <header className="flex items-center justify-between px-4 h-14 border-b border-gray-800/50 backdrop-blur-sm bg-black/20 shrink-0">
+    <TooltipProvider>
+      <div className="flex flex-col h-[100dvh] bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
+        <MainNavbar
+          title=""
+          backUrl="/week1"
+          backLabel="Back"
+          onBack={() => {
+            if (compareCount > COMPARE_SINGLE) {
+              // Going back from comparison to selection view
+              setCompareCount(COMPARE_SINGLE);
+              // Reset responses when going back
+              setResponses({
+                A: null,
+                B: null,
+                C: null,
+              });
+              return; // Prevent navigation
+            }
+            // Otherwise, use default navigation to backUrl
+
+            router.push('/week1')
+          }}
+          rightContent={
+            <div className="flex items-center space-x-5">
+              {/* Compare Models button with tooltip */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                  <Button
+                    size="sm"
+                    onClick={handleCompareClick}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
+                    disabled={compareCount > COMPARE_SINGLE ? false : selectedModels.length < 2 || !selectedQuestion}
+                  >
+                    <ArrowLeftRight className="h-4 w-4" />
+                    Compare Models
+                  </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="center">
+                  {selectedModels.length < 2 ? "Please select at least 2 models to compare" : !selectedQuestion ? "Please select a scenario" : "Start comparison"}
+                </TooltipContent>
+              </Tooltip>
+
+              {/* View Document button */}
+              <Tooltip>
+                 <TooltipTrigger asChild>
+                   <span>
+                    <Button
+                      size="sm"
+                      onClick={toggleDocumentPreview}
+                      className="bg-indigo-700 hover:bg-indigo-900 text-white rounded-md h-9 flex items-center"
+                        >
+                      <File className="h-4 w-4" />
+                      View Document
+                    </Button>
+                    </span>
+               </TooltipTrigger>
+               <TooltipContent side="bottom" align="center">
+                This document is used as context for these scenarios.
+                 </TooltipContent>
+              </Tooltip>
+
+              {/* Replace Discuss button with Complete Exercise (with tooltip) */}
+              {compareCount > COMPARE_SINGLE && hasAnyResponses() ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        className="bg-indigo-700 hover:bg-indigo-900 text-white rounded-md h-9 flex items-center"
+                        size="sm"
+                        onClick={() => {
+                          if (areAllRatingsComplete()) {
+                            markExerciseComplete("exercise1");
+                            router.push('/week1');
+                          } else {
+                            setShowRatingWarning(true);
+                          }
+                        }}
+                        disabled={!areAllRatingsComplete()}
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                        Complete Exercise
+                      </Button>
+                    </span>
+       </TooltipTrigger>
+                  <TooltipContent side="bottom" align="center">
+                    {!areAllRatingsComplete() 
+                      ? "Rate all models and wait for discussion before completing." 
+                      : "Mark exercise as complete and return to Week 1"}
+                  </TooltipContent >
+                </Tooltip>
+              ) : compareCount > COMPARE_SINGLE && !hasAnyResponses() ? (
+                <Button
+                  disabled
+                  className="bg-blue-900/50 border border-blue-700/30 text-white flex items-center gap-2 opacity-70"
+                >
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Waiting for responses...
+                </Button>
+              ) : null}
+            </div>
+          }
+        />
         
-        
-        <div className="w-24">
-          {compareCount > COMPARE_SINGLE ? (
-            // Back button in comparison view - goes back to selection screen
+        {/* Add progress bar here */}
+        <div className="flex justify-center py-4 bg-gray-900/50 border-b border-gray-800">
+          <div className="flex items-center">
+            {navSteps.map((navStep, index) => (
+              <Fragment key={navStep.number}>
+                {/* Step indicator */}
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center mb-1
+                      ${navStep.isActive
+                        ? 'bg-indigo-600 text-white'
+                        : navStep.isCompleted
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-700 text-gray-300'
+                      }`}
+                  >
+                    {navStep.isCompleted && !navStep.isActive ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      navStep.number
+                    )}
+                  </div>
+                  <span className={`text-xs ${navStep.isActive ? 'text-indigo-300 font-medium' : 'text-gray-400'}`}>
+                    {navStep.label}
+                  </span>
+                </div>
+
+                {/* Connector line between steps (except after the last step) */}
+                {index < navSteps.length - 1 && (
+                  <div
+                    className={`w-12 h-0.5 mx-2 
+                      ${navSteps.findIndex(step => step.isActive) > index ||
+                        (index < navSteps.length - 1 && navSteps[index].isCompleted && navSteps[index + 1].isCompleted)
+                        ? 'bg-green-600' : 'bg-gray-700'}`}
+                  ></div>
+                )}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {currentView === 'playground' ? (
+            compareCount === COMPARE_SINGLE ? (
+              <SinglePanelView
+                response={responses.A}
+                isGenerating={isGenerating}
+                prompt={prompt}
+                onSubmit={handleSubmit}
+                messages={messages}
+                onQuestionSelect={handleQuestionSelect}
+                selectedQuestion={selectedQuestion}
+                setSelectedModels={setSelectedModels}  // Pass function to allow model selection
+                selectedModels={selectedModels}  // Pass selected models
+              />
+            ) : (
+              <div className={`grid ${compareCount === COMPARE_DOUBLE ? "grid-cols-2" : "grid-cols-3"} gap-0 h-[calc(100vh-180px)] overflow-hidden`}>
+                {selectedModels.includes('gpt-4o') && (
+                  <ModelPanel
+                    className="overflow-hidden"
+                    response={responses.A}
+                    isGenerating={isGeneratingPanels.A}
+                    prompt={prompt}
+                    showResponseArea={true}
+                    selectedModel="gpt-4o"
+                    onRatingChange={handleRatingChange}
+                    messages={messages.filter((m) => m.panelId === 'A')}
+                  />
+                )}
+                {selectedModels.includes('claude-3-7-sonnet-20250219') && (
+                  <ModelPanel
+                    className={`overflow-hidden ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
+                    response={responses.B}
+                    isGenerating={isGeneratingPanels.B}
+                    showResponseArea={true}
+                    prompt={prompt}
+                    selectedModel="claude-3-7-sonnet-20250219"
+                    onRatingChange={handleRatingChange}  // Add this prop
+                    messages={messages.filter((m) => m.panelId === 'B')}
+                  />
+                )}
+                {selectedModels.includes('gemini-2.0-flash') && (
+                  <ModelPanel
+                    className="overflow-hidden"
+                    response={responses.C}
+                    isGenerating={isGeneratingPanels.C}
+                    showResponseArea={true}
+                    prompt={prompt}
+                    selectedModel="gemini-2.0-flash"
+                    onRatingChange={handleRatingChange}  // Add this prop
+                    messages={messages.filter((m) => m.panelId === 'C')}
+                  />
+                )}
+              </div>
+            )
+          ) : (
+            <PromptTechniques />
+          )}
+        </div>
+
+                {/* Add Clear Results button at the bottom when we have responses */}
+        {compareCount > COMPARE_SINGLE && hasAnyResponses() && (
+          <div className="sticky bottom-0 w-full p-3 bg-gray-900/80 backdrop-blur-sm border-t border-gray-800/50 flex justify-center">
             <Button
-              variant="ghost"
-              size="sm"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center gap-2 px-4"
               onClick={() => {
-                setCompareCount(COMPARE_SINGLE);
-                // Reset responses when going back
                 setResponses({
                   A: null,
                   B: null,
                   C: null,
                 });
               }}
-              className="text-gray-400 hover:text-white"
             >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Back
+              <Eraser className="h-4 w-4" />
+              Clear Results
             </Button>
-          ) : (
-            // Regular back button in selection view
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/week1')}
-              className="text-gray-400 hover:text-white"
-            >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Back
-            </Button>
-          )}
-        </div>
-
-            <div className="flex-1 flex justify-center items-center text-white font-semibold text-lg">
-            <div className="flex items-center ml-50">
-            <Image
-              src={aiCcoreLogo}
-              alt="AI-CCORE Logo"
-              width={120}
-              height={115}
-            />
-            </div>
-        </div>
-
-
-
-        <div className="flex items-center space-x-2">
-          {/* Compare Models button - shown in both views */}
-          <Button
-            
-            size="sm"
-            onClick={handleCompareClick}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
-            // className="text-gray-400 hover:text-white"
-            disabled={compareCount > COMPARE_SINGLE ? false : selectedModels.length < 2 || !selectedQuestion}
-          >
-            <ArrowLeftRight className="mr-2 h-4 w-4" />
-            Compare Models
-          </Button>
-
-          {/* View Document button - shown in both views */}
-          <Button
-            variant="ghost"
-            size="sm"
-            // onClick={() => {
-            //   if (compareCount > COMPARE_SINGLE) {
-            //     // In comparison view, use functionality similar to SinglePanelView's document preview
-            //     window.open(`/Mobile-Device-Policy.pdf#view=FitH`, '_blank');
-            //   } else {
-            //     // In single panel view, use the existing document preview
-            //     // This assumes your SinglePanelView has toggleDocumentPreview exposed
-            //     // You might need to pass this as a prop to SinglePanelView
-            //     setShowDocumentPreview && setShowDocumentPreview(true);
-            //   }
-            // }}
-            onClick={toggleDocumentPreview}
-            // className="text-gray-400 hover:text-white"
-             className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
-          >
-            <File className="mr-2 h-4 w-4" />
-            View Document
-          </Button>
-
-          {/* <div className="absolute right-10">
-            <Button
-              onClick={toggleDocumentPreview}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1 flex items-center gap-2"
-              aria-label="View Document"
-            >
-              <File className="h-4 w-4" />
-              <span>View Document</span>
-            </Button>
-          </div> */}
-
-          
-
-          {/* Clear button - clears only the responses */}
-          
-
-          {/* Discuss/Complete Exercise button - only in compare mode with responses */}
-          {compareCount > COMPARE_SINGLE && hasAnyResponses() ? (
-            <>
-              <Button
-                // variant="ghost"
-                // size="sm"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
-                
-                onClick={() => {
-                  if (isDiscussMode) {
-                    // If already in discuss mode, mark as complete and go back
-                    markExerciseComplete("exercise1");
-                    router.push('/week1');
-                  } else {
-                    // Check if all ratings are complete before allowing discuss mode
-                    if (areAllRatingsComplete()) {
-                      setIsDiscussMode(true);
-                      // Here you could also trigger loading discussion content
-                    } else {
-                      // Show warning if ratings are incomplete
-                      setShowRatingWarning(true);
-                    }
-                  }
-                }}
-                // className="text-gray-400 hover:text-white"
-              >
-                {isDiscussMode ? (
-                  <>
-                    <CheckCircle className="h-4 w-4" />
-                    Complete Exercise
-                  </>
-                ) : (
-                  <>
-                    <MessageCircle className="h-4 w-4" />
-                    Discuss
-                  </>
-                )}
-              </Button>
-
-              <Button
-                // variant="ghost"
-                // size="sm"
-                 className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
-                onClick={() => {
-                  // Only clear responses, not the entire chat history
-                  setResponses({
-                    A: null,
-                    B: null,
-                    C: null,
-                  });
-                }}
-                // className="text-gray-400 hover:text-white"
-              >
-                <Eraser className="mr-2 h-4 w-4" />
-                Clear Results
-              </Button>
-            </>
-          
-          ) : compareCount > COMPARE_SINGLE && !hasAnyResponses() ? (
-            // Show a disabled button while waiting for responses
-            <Button
-              disabled
-              className="bg-blue-900/50 border border-blue-700/30 text-white flex items-center gap-2 opacity-70"
-            >
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Waiting for responses...
-            </Button>
-          ) : null}
-        </div>
-      </header>
-
-      {/* Add progress bar here */}
-      <div className="flex justify-center py-4 bg-gray-900/50 border-b border-gray-800">
-        <div className="flex items-center">
-          {navSteps.map((navStep, index) => (
-            <Fragment key={navStep.number}>
-              {/* Step indicator */}
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center mb-1
-                    ${navStep.isActive
-                      ? 'bg-indigo-600 text-white'
-                      : navStep.isCompleted
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-700 text-gray-300'
-                    }`}
-                >
-                  {navStep.isCompleted && !navStep.isActive ? (
-                    <CheckCircle className="h-4 w-4" />
-                  ) : (
-                    navStep.number
-                  )}
-                </div>
-                <span className={`text-xs ${navStep.isActive ? 'text-indigo-300 font-medium' : 'text-gray-400'}`}>
-                  {navStep.label}
-                </span>
-              </div>
-
-              {/* Connector line between steps (except after the last step) */}
-              {index < navSteps.length - 1 && (
-                <div
-                  className={`w-12 h-0.5 mx-2 
-                    ${navSteps.findIndex(step => step.isActive) > index ||
-                      (index < navSteps.length - 1 && navSteps[index].isCompleted && navSteps[index + 1].isCompleted)
-                      ? 'bg-green-600' : 'bg-gray-700'}`}
-                ></div>
-              )}
-            </Fragment>
-          ))}
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {currentView === 'playground' ? (
-          compareCount === COMPARE_SINGLE ? (
-            <SinglePanelView
-              response={responses.A}
-              isGenerating={isGenerating}
-              prompt={prompt}
-              onSubmit={handleSubmit}
-              messages={messages}
-              onQuestionSelect={handleQuestionSelect}
-              selectedQuestion={selectedQuestion}
-              setSelectedModels={setSelectedModels}  // Pass function to allow model selection
-              selectedModels={selectedModels}  // Pass selected models
-            />
-          ) : (
-            <div className={`grid ${compareCount === COMPARE_DOUBLE ? "grid-cols-2" : "grid-cols-3"} gap-0 h-[calc(100vh-180px)] overflow-hidden`}>
-              {selectedModels.includes('gpt-4o') && (
-                <ModelPanel
-                  className="overflow-auto border-r border-gray-800/50"
-                  response={responses.A}
-                  isGenerating={isGeneratingPanels.A}
-                  prompt={prompt}
-                  showResponseArea={true}
-                  selectedModel="gpt-4o"
-                  onRatingChange={handleRatingChange}
-                  messages={messages.filter((m) => m.panelId === 'A')}
-                />
-              )}
-              {selectedModels.includes('claude-3-7-sonnet-20250219') && (
-                <ModelPanel
-                  className={`overflow-auto ${compareCount === COMPARE_TRIPLE ? "border-r border-gray-800/50" : ""}`}
-                  response={responses.B}
-                  isGenerating={isGeneratingPanels.B}
-                  showResponseArea={true}
-                  prompt={prompt}
-                  selectedModel="claude-3-7-sonnet-20250219"
-                  onRatingChange={handleRatingChange}  // Add this prop
-                  messages={messages.filter((m) => m.panelId === 'B')}
-                />
-              )}
-              {selectedModels.includes('gemini-2.0-flash') && (
-                <ModelPanel
-                  className="overflow-auto"
-                  response={responses.C}
-                  isGenerating={isGeneratingPanels.C}
-                  showResponseArea={true}
-                  prompt={prompt}
-                  selectedModel="gemini-2.0-flash"
-                  onRatingChange={handleRatingChange}  // Add this prop
-                  messages={messages.filter((m) => m.panelId === 'C')}
-                />
-              )}
-            </div>
-          )
-        ) : (
-          <PromptTechniques />
+          </div>
         )}
+
+
+
+        {/* Chat input - only shown in compare mode, placed outside of the panel view */}
+        {/* {compareCount > COMPARE_SINGLE && (
+          <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
+            <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
+          </div>
+        )} */}
+
+        {/* Add warning message */}
+        {showRatingWarning && (
+          <div className="absolute top-16 right-4 bg-red-900/80 text-white px-4 py-2 rounded shadow-md z-20">
+            Please complete all ratings before proceeding
+          </div>
+        )}
+
+        <DocumentPreviewModal />
       </div>
-      {/* Chat input - only shown in compare mode, placed outside of the panel view */}
-      {/* {compareCount > COMPARE_SINGLE && (
-        <div className="shrink-0 p-4 border-t border-gray-800/50 bg-black/20 backdrop-blur-sm">
-          <ChatInput onSubmit={handleSubmit} isGenerating={isGenerating} />
-        </div>
-      )} */}
-
-      {/* Add warning message */}
-      {showRatingWarning && (
-        <div className="absolute top-16 right-4 bg-red-900/80 text-white px-4 py-2 rounded shadow-md z-20">
-          Please complete all ratings before proceeding
-        </div>
-      )}
-
-      <DocumentPreviewModal />
-    </div>
+    </TooltipProvider>
   )
 }
