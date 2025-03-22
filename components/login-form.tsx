@@ -1,51 +1,47 @@
-"use client"
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { useApiStore } from "@/hooks/useApiStore";
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
-import { useApiStore } from "@/hooks/useApiStore"
-
-export default function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { setApiKeys } = useApiStore()
+function LoginFormContent() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { setApiKeys } = useApiStore();
 
   // Check for registration success message
   useEffect(() => {
     if (searchParams?.get("registered") === "true") {
-      setSuccess("Registration successful! You can now log in.")
+      setSuccess("Registration successful! You can now log in.");
     }
-  }, [searchParams])
+  }, [searchParams]);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsLoading(true)
-    setError("")
-    setSuccess("")
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
 
-    const formData = new FormData(event.currentTarget)
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email");
+    const password = formData.get("password");
 
     try {
       // For testing purposes, accept dummy credentials directly in the client
       if (email === "test@example.com" && password === "password123") {
         // Simulate a delay for the login process
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Redirect to dashboard
-        router.push("/dashboard")
-        return
+        router.push("/dashboard");
+        return;
       }
 
       const response = await fetch("/api/auth/login", {
@@ -54,54 +50,51 @@ export default function LoginForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
-      // console.log(response)
-      let data
+      let data;
       try {
         // Check if response is JSON
-        const contentType = response.headers.get("content-type")
+        const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Server returned an invalid response. Please try again later.")
+          throw new Error("Server returned an invalid response. Please try again later.");
         }
-        data = await response.json()
+        data = await response.json();
       } catch (jsonError) {
-        console.error("Error parsing JSON:", jsonError)
-        throw new Error("Failed to process server response. Please try again.")
+        console.error("Error parsing JSON:", jsonError);
+        throw new Error("Failed to process server response. Please try again.");
       }
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to login")
+        throw new Error(data.error || "Failed to login");
       }
 
       // Store API keys from the response if they exist
       if (data.apiKeys) {
         // Store in global state
-        setApiKeys(data.apiKeys)
-        
+        setApiKeys(data.apiKeys);
+
         // Add try-catch for localStorage
         try {
-          localStorage.setItem('apiKeys', JSON.stringify(data.apiKeys))
+          localStorage.setItem('apiKeys', JSON.stringify(data.apiKeys));
         } catch (err) {
-          console.warn('Failed to store API keys in localStorage:', err)
+          console.warn('Failed to store API keys in localStorage:', err);
           // This can happen if storage is full or disabled
         }
       }
 
-      // console.log("Login successful, redirecting to dashboard...")
       // Check if response includes redirect URL
       if (data.redirect) {
-        router.push(data.redirect)
+        router.push(data.redirect);
       } else {
         // Default fallback
-        router.push("/dashboard")
+        router.push("/dashboard");
       }
-      // console.log("Router.push called")
-    } catch (err: any) {
-      setError(err.message || "An error occurred during login. Please try again.")
-      console.error(err)
+    } catch (err) {
+      setError(err.message || "An error occurred during login. Please try again.");
+      console.error(err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -124,9 +117,6 @@ export default function LoginForm() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              {/* <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                Forgot password?
-              </Link> */}
             </div>
             <Input id="password" name="password" type="password" placeholder="••••••••" required disabled={isLoading} />
           </div>
@@ -152,6 +142,13 @@ export default function LoginForm() {
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }
 
+export default function LoginFormWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginFormContent />
+    </Suspense>
+  );
+}
