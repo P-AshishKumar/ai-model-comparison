@@ -16,8 +16,8 @@ const maskApiKey = (key: string): string => {
     return "Not configured";
   }
   // Only show first 4 and last 4 characters
-  return key.length <= 8 
-    ? "********" 
+  return key.length <= 8
+    ? "********"
     : `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
 };
 
@@ -25,17 +25,17 @@ export default function Playground4Page() {
   const router = useRouter()
   const [showApiKeys, setShowApiKeys] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
-  
+
   // Get API keys from the store
   const { apiKeys: storeApiKeys } = useApiStore()
-  
+
   // API keys for the modal - use keys from store or fallback to placeholders
   const [apiKeys, setApiKeys] = useState([
     { name: "OPENAI_API_KEY", value: "sk-..." },
     { name: "GOOGLE_API_KEY", value: "AIza..." },
     { name: "ANTHROPIC_API_KEY", value: "sk-ant-..." }
   ])
-  
+
   // Effect to update API keys when store changes
   useEffect(() => {
     if (storeApiKeys) {
@@ -87,95 +87,88 @@ export default function Playground4Page() {
     {
       number: 1,
       title: "Setting up the Streamlit Application",
-      prompt: " Create a virtual environment and generate a basic Streamlit app that creates a web page with a text input box for users to write Python code. The app should display an output area for the results and a space for AI-based code suggestions.",
+      prompt: `I am using a Windows machine.
+
+Create a virtual environment.
+
+Install the necessary libraries: streamlit, openai, matplotlib, and pandas.
+
+Set up a Streamlit-based web application that includes:
+
+A text input box where users can write and execute Python code.
+
+An output area to display the results of the executed code.
+
+An AI-based assistant section below the output area where users can enter a query and receive a response from OpenAI's API. 
+
+A sidebar input field to allow users to enter their OpenAI API key.
+
+A default code snippet in the text input area that plots a sine wave.
+
+OpenAI API Reference:
+Use the OpenAI API with the following example:
+from openai import OpenAI  
+client = OpenAI()
+
+completion = client.chat.completions.create(
+    model="gpt-4o",  
+    messages=[{"role": "user", "content": "Write a one-sentence bedtime story about a unicorn."}]
+)
+
+print(completion.choices[0].message.content)`
     },
     {
       number: 2,
-      title: "Python Code Execution with Output Capture",
-      prompt: "Write Python code within a Streamlit app that allows users to input and run Python code. Capture the output and display it below the input box. Handle any exceptions gracefully and display error messages",
+      title: "Interactivity with the AI Assistant",
+      prompt: "The assistant lacks context regarding my provided input, including Python code output. Please ensure the output remains visible when I ask questions to AI assistant.",
     },
-    {
-      number: 3,
-      title: "Markdown Rendering",
-      prompt: "Add a markdown section in the Streamlit app that renders markdown text. Users should be able to input markdown text, and it should be displayed below the code execution area.",
-    },
-    {
-      number: 4,
-      title: "Matplotlib Support",
-      prompt: "The LLM assistant lacks context about the input and output you're providing in your notebook cells. Can you provide contextual information to the assistant so it can better understand and respond to your questions?",
-    },
-    {
-      number: 5,
-      title: "OpenAI GPT-4o for Code Assistance",
-      prompt: "Integrate Matplotlib support in the Streamlit app. Allow users to create and display plots from their Python code input. Display the generated plots below the input/output area",
-    },
-    {
-        number:6,
-        title:"Secure API Key Management",
-        prompt:"Help me set up secure API key management in the Streamlit app. Use environment variables to store the OpenAI GPT-4 API key and ensure it is not exposed in the source code."
-    },
-    {
-        number:7,
-        title:"Secure API Key Management",
-        prompt:"Help me set up secure API key management in the Streamlit app. Use environment variables to store the OpenAI GPT-4 API key and ensure it is not exposed in the source code."
-    },
-    {
-        number:8,
-        title:"Interactivity with the AI Assistant", // Missing comma was here
-        prompt:"Enable interactive communication with the AI assistant. The user can ask the AI for help with their code, and the assistant should provide suggestions, explanations, or fixes to improve the code."
-    },
-    {
-        number:9,
-        title: "Combining All Features Together", // Missing comma was here
-        prompt:"Combine the features above into a cohesive Streamlit app. Users should be able to input Python code, view the output, get AI-based suggestions, render markdown text, and display Matplotlib plots, all in one seamless interface"  
-    }
   ];
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-blue-950 text-white">
 
-        <MainNavbar
-          title=""
-          backUrl="/week1"
-          backLabel="Back"
-          rightContent={
-            <div className="flex items-center gap-3">
-              <Button 
-                onClick={() => setShowApiKeys(true)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
-              >
-                <Key className="h-4 w-4" />
-                API Keys
-              </Button>
-              
-              <Button
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
-                onClick={() => {
-                  // Mark exercise as complete
-                  const storedCompletedExercises = localStorage.getItem('completedExercises') || '[]';
-                  const completedExercises = JSON.parse(storedCompletedExercises);
-                  
-                  if (!completedExercises.includes('exercise4')) {
-                    completedExercises.push('exercise4');
-                    localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
-                  }
-                  
-                  router.push('/week1');
-                }}
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Complete Exercise
-              </Button>
-            </div>
-          }
-        />
+      <MainNavbar
+        title=""
+        backUrl="/week1"
+        backLabel="Back"
+        rightContent={
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => setShowApiKeys(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
+            >
+              <Key className="h-4 w-4" />
+              API Keys
+            </Button>
 
-        <div className="text-center mb-6  mt-5">
-                        <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 4 <span className="text-indigo-400">Copilot-Driven Development</span></h2>
-                    </div>
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md h-9 flex items-center gap-2 px-3"
+              onClick={() => {
+                // Mark exercise as complete
+                const storedCompletedExercises = localStorage.getItem('completedExercises') || '[]';
+                const completedExercises = JSON.parse(storedCompletedExercises);
+
+                if (!completedExercises.includes('exercise4')) {
+                  completedExercises.push('exercise4');
+                  localStorage.setItem('completedExercises', JSON.stringify(completedExercises));
+                }
+
+                router.push('/week1');
+              }}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Complete Exercise
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="text-center mb-6  mt-5">
+        <h2 className="text-xl md:text-2xl font-semibold text-white">Exercise 4 <span className="text-indigo-400">Copilot-Driven Development</span></h2>
+      </div>
       <TooltipProvider>
       </TooltipProvider>
-{/*       
+      {/*       
       <div className="flex justify-center py-4 bg-gray-900/50 border-b border-gray-800">
         <div className="flex items-center">
           <div className="flex items-center">
@@ -195,7 +188,7 @@ export default function Playground4Page() {
           <h1 className="text-2xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-blue-200">
             Building an LLM Assistant Notebook Using Copilot
           </h1>
-          
+
           <div className="mb-8 text-gray-300">
             <p>In this exercise, we'll use GitHub Copilot to Create a Streamlit application that provides a Python code execution environment with AI assistance. The project should include the following features: Python code execution with output capture, markdown rendering, Matplotlib support, OpenAI GPT-4o for code assistance, and secure API key management. Users should be able to write and run Python code, interact with the AI assistant, and receive code-related suggestions or explanations</p>
           </div>
@@ -205,7 +198,7 @@ export default function Playground4Page() {
             <h2 className="text-xl font-bold text-gray-200 mb-4">Resources</h2>
             <div className="grid gap-3">
               {resources.map((resource, index) => (
-                <Link 
+                <Link
                   href={resource.url}
                   key={index}
                   target="_blank"
@@ -225,7 +218,7 @@ export default function Playground4Page() {
               <span className="bg-indigo-600 rounded-full w-8 h-8 inline-flex items-center justify-center mr-3 text-base">1</span>
               Recommended LLM Models
             </h2>
-            
+
             <div className="grid gap-3">
               {llmModels.map((model, index) => (
                 <div key={index} className="flex items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
@@ -257,7 +250,7 @@ export default function Playground4Page() {
             <span className="bg-indigo-600 rounded-full w-8 h-8 inline-flex items-center justify-center mr-3 text-base">2</span>
             GitHub Copilot Prompts
           </h2>
-          
+
           <p className="mb-6">
             Use these prompts with GitHub Copilot to build your LLM-powered notebook. Each prompt addresses a specific part of the implementation:
           </p>
@@ -270,7 +263,7 @@ export default function Playground4Page() {
                 </span>
                 {block.title}
               </h3>
-              
+
               <div className="relative bg-black/40 rounded-md overflow-hidden border border-gray-800/80">
                 <div className="flex items-center justify-between bg-gray-800/60 px-4 py-2 text-sm font-medium border-b border-gray-700/50">
                   <span>Prompt</span>
@@ -298,7 +291,7 @@ export default function Playground4Page() {
           ))}
 
           <h2 className="text-2xl font-bold text-gray-200 mt-12 mb-6">Implementation Tips</h2>
-          
+
           <ul className="list-disc list-inside space-y-2 ml-4 text-gray-300">
             <li>Start by implementing the basic API integration with OpenAI</li>
             <li>Build the secure API key management system next</li>
@@ -306,7 +299,7 @@ export default function Playground4Page() {
             <li>Add context management to improve the LLM's understanding of notebook state</li>
             <li>Finally, enhance the UI to provide a better user experience</li>
           </ul>
-          
+
           <div className="mt-10 p-4 bg-indigo-900/30 border border-indigo-800/50 rounded-lg">
             <h3 className="text-lg font-medium mb-2 text-indigo-300">Next Steps</h3>
             <p className="text-gray-300">
@@ -326,7 +319,7 @@ export default function Playground4Page() {
               These keys are required for connecting to various LLM providers.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             {apiKeys.map((key, index) => (
               <div key={key.name} className="flex items-center justify-between">
@@ -338,12 +331,12 @@ export default function Playground4Page() {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button 
-                          onClick={() => handleCopy(key.value, index + 1000)} 
+                        <button
+                          onClick={() => handleCopy(key.value, index + 1000)}
                           className="bg-gray-700 hover:bg-gray-600 p-2 rounded-r border-t border-r border-b border-gray-700"
                         >
-                          {copiedIndex === index + 1000 ? 
-                            <Check className="h-4 w-4 text-green-400" /> : 
+                          {copiedIndex === index + 1000 ?
+                            <Check className="h-4 w-4 text-green-400" /> :
                             <Copy className="h-4 w-4 text-gray-300" />
                           }
                         </button>
@@ -357,9 +350,9 @@ export default function Playground4Page() {
               </div>
             ))}
           </div>
-          
+
           <DialogFooter>
-            <Button 
+            <Button
               onClick={() => setShowApiKeys(false)}
               className="bg-indigo-600 hover:bg-indigo-700 w-full"
             >
