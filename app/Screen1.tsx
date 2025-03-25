@@ -76,7 +76,7 @@ const Screen1 = () => {
                     <Card className="bg-gray-900/80 border border-gray-800/50 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-2xl text-gray-200">Week 2</CardTitle>
-                            <CardDescription className="text-gray-400">Prompt Engineering</CardDescription>
+                            {/* <CardDescription className="text-gray-400">Prompt Engineering</CardDescription> */}
                         </CardHeader>
                         {/* <CardContent className="text-gray-300">
                             <p>Learn advanced prompt engineering techniques to get the most effective results from different AI models.</p>
@@ -95,7 +95,7 @@ const Screen1 = () => {
                     <Card className="bg-gray-900/80 border border-gray-800/50 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-2xl text-gray-200">Week 3</CardTitle>
-                            <CardDescription className="text-gray-400">RAG Implementation</CardDescription>
+                            {/* <CardDescription className="text-gray-400">RAG Implementation</CardDescription> */}
                         </CardHeader>
                         {/* <CardContent className="text-gray-300">
                             <p>Build Retrieval-Augmented Generation systems to enhance LLM responses with external knowledge sources.</p>
@@ -114,7 +114,7 @@ const Screen1 = () => {
                     <Card className="bg-gray-900/80 border border-gray-800/50 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
                             <CardTitle className="text-2xl text-gray-200">Week 4</CardTitle>
-                            <CardDescription className="text-gray-400">Fine-tuning & Evaluation</CardDescription>
+                            {/* <CardDescription className="text-gray-400">Fine-tuning & Evaluation</CardDescription> */}
                         </CardHeader>
                         {/* <CardContent className="text-gray-300">
                             <p>Learn techniques for customizing foundation models and properly evaluating AI model performance.</p>
