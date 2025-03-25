@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Key, Copy, Check, BookOpen, CheckCircle, ExternalLink, Github, FileText } from "lucide-react"
+import { Key, Copy, Check, BookOpen, CheckCircle, ExternalLink, Github, FileText, Video, Play } from "lucide-react"
 import MainNavbar from "@/components/MainNavbar"
 import { useRouter } from 'next/navigation'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
@@ -73,6 +73,16 @@ export default function Playground4Page() {
     // { name: "VS Code Cheat Sheet", url: "https://code.visualstudio.com/docs/getstarted/tips-and-tricks", icon: <FileText className="h-4 w-4 mr-2" /> },
     { name: "GitHub Copilot in VS Code cheat sheet", url: "https://code.visualstudio.com/docs/copilot/copilot-vscode-features", icon: <Github className="h-4 w-4 mr-2" /> },
     // { name: "Project Repository", url: "https://github.com/yourusername/llm-notebook-project", icon: <Github className="h-4 w-4 mr-2" /> }
+    {
+      name: "Demo Video",
+      url: "https://unomaha.zoom.us/rec/share/UcO3E04K7jwu8CO-i3wCj8qxdujsYFzbkv_q5TmJlUuMyOSL7UTx6yu-dAUN4-d0.DNJl4E_u3GqhlB8D?startTime=1742846018000",
+      icon: <Play className="h-4 w-4 mr-2" />
+    },
+    {
+      name: "Auxiliary Video",
+      url: "https://unomaha.zoom.us/rec/share/knSziMBQ6tC9Gn-U1txlKsYTx5FC8l_KnynOm0DrvD1TN1Zd0X4VYX4U-R8l0vg.Ov0-cD7-HefaF4S8?startTime=1742860697000",
+      icon: <Video className="h-4 w-4 mr-2" />
+    },
   ]
 
   // LLM models with copy functionality
@@ -209,6 +219,22 @@ print(completion.choices[0].message.content)`
                   <ExternalLink className="h-3 w-3 ml-2 opacity-70" />
                 </Link>
               ))}
+            </div>
+
+            {/* Help Section */}
+            <div className="mt-5 p-4 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
+              <h3 className="flex items-center text-lg font-medium text-indigo-300 mb-2">
+                <span className="mr-2">🛟</span> Need Help?
+              </h3>
+              <p className="text-gray-300">
+                If you're facing any issues with this exercise, please reach out to{" "}
+                <a
+                  href="mailto:apucakayala@unomaha.edu"
+                  className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2"
+                >
+                  apucakayala@unomaha.edu
+                </a>
+              </p>
             </div>
           </div>
 
@@ -364,7 +390,7 @@ print(completion.choices[0].message.content)`
 
       {/* Footer */}
       <footer className="border-t border-gray-800/50 py-6 mt-auto backdrop-blur-sm bg-black/20">
-        <div class="container mx-auto text-center text-gray-500 text-sm">
+        <div className="container mx-auto text-center text-gray-500 text-sm">
           <p>© 2024 AI-CCORE Bootcamp Labs. All rights reserved.</p>
         </div>
       </footer>

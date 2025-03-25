@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, FileText } from 'lucide-react'
 import MainNavbar from "@/components/MainNavbar" // Import MainNavbar
 import { redirect } from "next/navigation";
 
@@ -53,12 +53,21 @@ const Screen1 = () => {
                         {/* <CardContent className="text-gray-200">
                             <p>Compare responses from leading LLMs including GPT-4o, Claude, and Gemini. Analyze performance across different prompting techniques.</p>
                         </CardContent> */}
-                        <CardFooter>
+                        <CardFooter className="flex flex-col sm:flex-row gap-4 justify-between">
                             <Button
                                 onClick={handleWeek1Click}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
                             >
                                 Access Lab <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                onClick={() => window.open('https://unomail-my.sharepoint.com/:f:/g/personal/msubramaniam_unomaha_edu/Eoey1pUWPrpGudEb4dWgcRMBadGIcp7DHgW3VPf60hL88w?e=LBflNp', '_blank')}
+                                className="flex-1 bg-purple-700 hover:bg-purple-800 text-white"
+                                variant="secondary"
+                            >
+                                <FileText className="mr-2 h-4 w-4" />
+                                Presentation Materials
                             </Button>
                         </CardFooter>
                     </Card>
