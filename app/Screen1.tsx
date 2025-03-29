@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, FileText } from 'lucide-react'
+import { ArrowRight, FileText, CheckCircle, Clock } from 'lucide-react'
 import MainNavbar from "@/components/MainNavbar" // Import MainNavbar
 import { redirect } from "next/navigation";
 
@@ -15,6 +15,10 @@ const Screen1 = () => {
     // Function to navigate to Screen2 when Week 1 is clicked
     const handleWeek1Click = () => {
         router.push('/week1');
+    };
+
+    const handleWeek2Click = () => {
+        router.push('/week2');
     };
 
     return (
@@ -44,21 +48,24 @@ const Screen1 = () => {
 
                 {/* Week grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-                    {/* Week 1 Card - Enabled */}
-                    <Card className="bg-gradient-to-br from-indigo-900/80 to-blue-900/80 border border-indigo-500/50 shadow-lg hover:shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+                    {/* Week 1 Card - Completed */}
+                    <Card className="bg-gradient-to-br from-green-900/60 to-teal-900/60 border border-green-500/50 shadow-lg hover:shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
-                            <CardTitle className="text-2xl text-white">Week 1</CardTitle>
-                            <CardDescription className="text-indigo-200">AI Model Comparison</CardDescription>
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-2xl text-white">Week 1</CardTitle>
+                                <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Completed
+                                </span>
+                            </div>
+                            <CardDescription className="text-green-200">AI Model Comparison</CardDescription>
                         </CardHeader>
-                        {/* <CardContent className="text-gray-200">
-                            <p>Compare responses from leading LLMs including GPT-4o, Claude, and Gemini. Analyze performance across different prompting techniques.</p>
-                        </CardContent> */}
                         <CardFooter className="flex flex-col sm:flex-row gap-4 justify-between">
                             <Button
                                 onClick={handleWeek1Click}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                             >
-                                Access Lab <ArrowRight className="ml-2 h-4 w-4" />
+                                Review Lab <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
 
                             <Button
@@ -72,21 +79,33 @@ const Screen1 = () => {
                         </CardFooter>
                     </Card>
 
-                    {/* Week 2 Card - Disabled */}
-                    <Card className="bg-gray-900/80 border border-gray-800/50 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm">
+                    {/* Week 2 Card - Active */}
+                    <Card className="bg-gradient-to-br from-indigo-900/80 to-blue-900/80 border border-indigo-500/50 shadow-lg hover:shadow-[0_0_15px_rgba(79,70,229,0.4)] transition-all duration-300 hover:scale-105 backdrop-blur-sm">
                         <CardHeader>
-                            <CardTitle className="text-2xl text-gray-200">Week 2</CardTitle>
-                            {/* <CardDescription className="text-gray-400">Prompt Engineering</CardDescription> */}
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-2xl text-white">Week 2</CardTitle>
+                                <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    Current
+                                </span>
+                            </div>
+                            <CardDescription className="text-indigo-200">NLP techniques</CardDescription>
                         </CardHeader>
-                        {/* <CardContent className="text-gray-300">
-                            <p>Learn advanced prompt engineering techniques to get the most effective results from different AI models.</p>
-                        </CardContent> */}
-                        <CardFooter>
+                        <CardFooter className="flex flex-col sm:flex-row gap-4 justify-between">
                             <Button
-                                disabled
-                                className="w-full bg-gray-800 text-gray-400 cursor-not-allowed"
+                                onClick={handleWeek2Click}
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
                             >
-                                Coming Soon <ArrowRight className="ml-2 h-4 w-4" />
+                                Access Lab <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                onClick={() => window.open('https://unomail-my.sharepoint.com/personal/pmanda_unomaha_edu/_layouts/15/onedrive.aspx?e=5%3A08384447f5674252902aef9a2d585b2f&sharingv2=true&fromShare=true&at=9&CT=1743191862929&OR=OWA%2DNT%2DMail&CID=3cbe1455%2D0688%2Daafd%2D34fb%2D4c4450b6575e&id=%2Fpersonal%2Fpmanda%5Funomaha%5Fedu%2FDocuments%2FAttachments&FolderCTID=0x0120000C633FFF3D8A704794FB9157E4E1299F&view=0', '_blank')}
+                                className="flex-1 bg-purple-700 hover:bg-purple-800 text-white"
+                                variant="secondary"
+                            >
+                                <FileText className="mr-2 h-4 w-4" />
+                                Presentation Materials
                             </Button>
                         </CardFooter>
                     </Card>

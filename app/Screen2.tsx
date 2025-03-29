@@ -83,7 +83,7 @@ const Screen2 = ({
             <MainNavbar 
                 backUrl="/"
                 backLabel="Back"
-                onBack={() => router.push('/')}
+                onBack={() => router.push('dashboard')}
                 rightContent={
                     <div className="flex items-center gap-4">
                         <Button
