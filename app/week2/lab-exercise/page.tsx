@@ -29,7 +29,6 @@ export default function LabExercisePage() {
       tasks: [
         "Use spaCy for basic NER",
         "Apply LLM-based model (dslim/bert-base-NER)",
-        "Use clinical model (optional: en_ner_bc5cdr_md via scispaCy)"
       ]
     },
     {
@@ -38,7 +37,8 @@ export default function LabExercisePage() {
       description: "Generate embeddings using sentence-transformers.",
       tasks: [
         "Use all-MiniLM-L6-v2 model",
-        "Create vector representations for all documents"
+        "Create vector representations for all documents",
+        "Hint: Flatten all the documents into a single list"
       ]
     },
     {
@@ -241,26 +241,39 @@ export default function LabExercisePage() {
                       <p className="text-gray-300 mb-3">Use the following code to compute and visualize cosine similarity:</p>
                       
                       <div className="bg-black/30 rounded-lg p-4 font-mono text-sm text-gray-300">
-                        <p># Compute similarity between embeddings</p>
-                        <p>similarity_score = cosine_similarity(embedding_doc1, embedding_doc2)</p>
-                        <p></p>
-                        <p>import seaborn as sns</p>
-                        <p>import matplotlib.pyplot as plt</p>
-                        <p>import numpy as np</p>
-                        <p></p>
-                        <p># Example cosine similarity matrix (replace with your actual matrix)</p>
-                        <p>cosine_sim_matrix = np.array([</p>
-                        <p className="ml-4">[1.0, 0.8, 0.2, 0.5],</p>
-                        <p className="ml-4">[0.8, 1.0, 0.3, 0.6],</p>
-                        <p className="ml-4">[0.2, 0.3, 1.0, 0.1],</p>
-                        <p className="ml-4">[0.5, 0.6, 0.1, 1.0]</p>
-                        <p>])</p>
-                        <p></p>
+                        <p># Compute cosine similarity</p>
+                        <p>similarity_matrix = cosine_similarity(embeddings)
+                        </p>
                         <p># Plot the heatmap</p>
-                        <p>sns.heatmap(cosine_sim_matrix, annot=True, cmap="YlGnBu", fmt=".2f")</p>
-                        <p>plt.title("Cosine Similarity Heatmap")</p>
-                        <p>plt.xlabel("Documents")</p>
-                        <p>plt.ylabel("Documents")</p>
+                        <p>sns.heatmap(similarity_matrix, xticklabels=doc_labels, yticklabels=doc_labels,
+                            cmap="coolwarm", annot=True)</p>
+                        <p>plt.title("Document Similarity Heatmap (Cosine Scores)")</p>
+                        <p>plt.xticks(rotation=45, ha='right')</p>
+                        <p>plt.yticks(rotation=0)</p>
+                        <p>plt.tight_layout()</p>
+                        <p>plt.show()</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Add visualization hint to step 4 */}
+                  {step.number === 5 && (
+                    <div className="mt-6 bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                      <h4 className="text-lg font-semibold text-purple-300 mb-2">🔍 Visualization Code</h4>
+                      <p className="text-gray-300 mb-3">! Use the following code to compute cosine similarity between embeddings for doc1 and doc2</p>
+                      
+                      <div className="bg-black/30 rounded-lg p-4 font-mono text-sm text-gray-300">
+                        <p># Compute cosine similarity</p>
+                        <p>similarity_score = cosine_similarity(embedding_doc1, embedding_doc2)
+                        </p>
+                        <p># Plot the heatmap</p>
+                        <p>plt.figure(figsize=(8, 6))</p>
+                        <p>sns.heatmap(similarity_matrix, annot=True, fmt=".2f", cmap="YlOrBr",
+                            xticklabels=medical_labels, yticklabels=transport_labels)</p>
+                        <p>plt.title("Cosine Similarity: Transport vs Medical Insurance")</p>
+                        <p>plt.xlabel("Medical Insurance Documents")</p>
+                        <p>plt.ylabel("Transport & Logistics Documents")</p>
+                        <p>plt.tight_layout()</p>
                         <p>plt.show()</p>
                       </div>
                     </div>
