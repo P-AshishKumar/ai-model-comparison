@@ -204,66 +204,9 @@ export default function LabExercisePage() {
               </div>
             </div>
             
-            <div className="bg-black/30 rounded-lg p-4 font-mono text-sm text-gray-300 mb-4">
-              <p># Flatten for processing</p>
-              <p>documents = []</p>
-              <p>labels = []</p>
-              <p>for domain, entries in texts.items():</p>
-              <p className="ml-4">for entry in entries:</p>
-              <p className="ml-8">documents.append(entry)</p>
-              <p className="ml-8">labels.append(domain)</p>
-              <p></p>
-              <p>for i, doc in enumerate(documents):</p>
-              <p className="ml-4">print(f"\n[&#123;labels[i]&#125;] &#123;doc&#125;")</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-700/30">
-                <h3 className="text-lg font-semibold text-blue-300 mb-2">🚂 Transport & Logistics</h3>
-                <p className="text-sm text-gray-300">Locomotive maintenance documents</p>
-              </div>
-              
-              <div className="p-4 bg-green-900/30 rounded-lg border border-green-700/30">
-                <h3 className="text-lg font-semibold text-green-300 mb-2">🏥 Medical Insurance</h3>
-                <p className="text-sm text-gray-300">Clinical and insurance claims documents</p>
-              </div>
-              
-              <div className="p-4 bg-yellow-900/30 rounded-lg border border-yellow-700/30">
-                <h3 className="text-lg font-semibold text-yellow-300 mb-2">💵 Finance and Loans</h3>
-                <p className="text-sm text-gray-300">Loan application documents</p>
-              </div>
-            </div>
           </div>
 
-          {/* Visualization Hint */}
-          <div className="p-6 border rounded-lg bg-gray-900/40 border-purple-500/40 mb-8">
-            <h2 className="text-2xl font-bold text-white mb-4">🔍 Visualization Hints</h2>
-            <p className="text-gray-300 mb-4">Use the following code to compute and visualize cosine similarity:</p>
-            
-            <div className="bg-black/30 rounded-lg p-4 font-mono text-sm text-gray-300 mb-4">
-              <p># Compute similarity between embeddings</p>
-              <p>similarity_score = cosine_similarity(embedding_doc1, embedding_doc2)</p>
-              <p></p>
-              <p>import seaborn as sns</p>
-              <p>import matplotlib.pyplot as plt</p>
-              <p>import numpy as np</p>
-              <p></p>
-              <p># Example cosine similarity matrix (replace with your actual matrix)</p>
-              <p>cosine_sim_matrix = np.array([</p>
-              <p className="ml-4">[1.0, 0.8, 0.2, 0.5],</p>
-              <p className="ml-4">[0.8, 1.0, 0.3, 0.6],</p>
-              <p className="ml-4">[0.2, 0.3, 1.0, 0.1],</p>
-              <p className="ml-4">[0.5, 0.6, 0.1, 1.0]</p>
-              <p>])</p>
-              <p></p>
-              <p># Plot the heatmap</p>
-              <p>sns.heatmap(cosine_sim_matrix, annot=True, cmap="YlGnBu", fmt=".2f")</p>
-              <p>plt.title("Cosine Similarity Heatmap")</p>
-              <p>plt.xlabel("Documents")</p>
-              <p>plt.ylabel("Documents")</p>
-              <p>plt.show()</p>
-            </div>
-          </div>
+         
 
           {/* Steps */}
           {steps.map((step) => (
@@ -290,6 +233,38 @@ export default function LabExercisePage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Add visualization hint to step 4 */}
+                  {step.number === 4 && (
+                    <div className="mt-6 bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                      <h4 className="text-lg font-semibold text-purple-300 mb-2">🔍 Visualization Code</h4>
+                      <p className="text-gray-300 mb-3">Use the following code to compute and visualize cosine similarity:</p>
+                      
+                      <div className="bg-black/30 rounded-lg p-4 font-mono text-sm text-gray-300">
+                        <p># Compute similarity between embeddings</p>
+                        <p>similarity_score = cosine_similarity(embedding_doc1, embedding_doc2)</p>
+                        <p></p>
+                        <p>import seaborn as sns</p>
+                        <p>import matplotlib.pyplot as plt</p>
+                        <p>import numpy as np</p>
+                        <p></p>
+                        <p># Example cosine similarity matrix (replace with your actual matrix)</p>
+                        <p>cosine_sim_matrix = np.array([</p>
+                        <p className="ml-4">[1.0, 0.8, 0.2, 0.5],</p>
+                        <p className="ml-4">[0.8, 1.0, 0.3, 0.6],</p>
+                        <p className="ml-4">[0.2, 0.3, 1.0, 0.1],</p>
+                        <p className="ml-4">[0.5, 0.6, 0.1, 1.0]</p>
+                        <p>])</p>
+                        <p></p>
+                        <p># Plot the heatmap</p>
+                        <p>sns.heatmap(cosine_sim_matrix, annot=True, cmap="YlGnBu", fmt=".2f")</p>
+                        <p>plt.title("Cosine Similarity Heatmap")</p>
+                        <p>plt.xlabel("Documents")</p>
+                        <p>plt.ylabel("Documents")</p>
+                        <p>plt.show()</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
