@@ -17,7 +17,6 @@ export default function LabExercisePage() {
       title: "Text Preprocessing",
       description: "Use spaCy and NLTK for text preprocessing tasks.",
       tasks: [
-        "Sentence segmentation",
         "Word tokenization",
         "Stemming (using NLTK)",
         "POS tagging"
