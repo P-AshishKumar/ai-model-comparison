@@ -391,7 +391,7 @@ print(completion.choices[0].message.content)`
       {/* Footer */}
       <footer className="border-t border-gray-800/50 py-6 mt-auto backdrop-blur-sm bg-black/20">
         <div className="container mx-auto text-center text-gray-500 text-sm">
-          <p>© 2024 AI-CCORE Bootcamp Labs. All rights reserved.</p>
+          <p>© 2025 AI-CCORE Bootcamp Labs. All rights reserved.</p>
         </div>
       </footer>
     </div>
