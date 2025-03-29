@@ -100,7 +100,7 @@ const Screen1 = () => {
                             </Button>
 
                             <Button
-                                onClick={() => window.open('https://unomail-my.sharepoint.com/personal/pmanda_unomaha_edu/_layouts/15/onedrive.aspx?e=5%3A08384447f5674252902aef9a2d585b2f&sharingv2=true&fromShare=true&at=9&CT=1743191862929&OR=OWA%2DNT%2DMail&CID=3cbe1455%2D0688%2Daafd%2D34fb%2D4c4450b6575e&id=%2Fpersonal%2Fpmanda%5Funomaha%5Fedu%2FDocuments%2FAttachments&FolderCTID=0x0120000C633FFF3D8A704794FB9157E4E1299F&view=0', '_blank')}
+                                onClick={() => window.open('https://unomail-my.sharepoint.com/:f:/g/personal/msubramaniam_unomaha_edu/ErT7mFo2lExEkMnyJutdf-QB7QikN9NLe8ndtxiV25O9HQ?e=wTpsch', '_blank')}
                                 className="flex-1 bg-purple-700 hover:bg-purple-800 text-white"
                                 variant="secondary"
                             >
